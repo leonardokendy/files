@@ -43,30 +43,132 @@
     #mainView {
       padding-bottom: 80px;
     }
-  </style>
+  
+.playing {
+  transform: scale(0.98);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+  background-color: #424242 !important;
+  color: #fff;
+}
+
+</style>
 </head>
 <body>
-<div id="splash" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:#fff;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;opacity:0;transition:opacity 5s;">
-  <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" alt="Spring School Logo" style="width:60vw;max-width:300px;margin-bottom:20px;" />
-  <div style="font-size:12px;color:#999;">beta version · created by Leo</div>
+
+<style>
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+#startButton {
+  animation: pulse 2s infinite;
+}
+#fadeOverlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: white;
+  z-index: 10000;
+  animation: fadeOut 2.5s ease forwards;
+}
+#splashFade {
+  animation: fadeOut 1.5s ease forwards;
+}
+
+.playing {
+  transform: scale(0.98);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+  background-color: #424242 !important;
+  color: #fff;
+}
+
+</style>
+
+<div id="fadeOverlay"></div>
+
+<div id="splash" style="
+  position:fixed;
+  top:0; left:0;
+  width:100vw; height:100vh;
+  background:#fff;
+  z-index:9999;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:space-between;
+  opacity:0;
+  transition:opacity 3s ease-in;
+  padding: 5vh 0;
+  box-sizing:border-box;
+">
+
+  <!-- Metade superior com logo aumentado -->
+  <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+    <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" alt="Spring School Logo"
+      style="width:78vw;max-width:390px;" />
+  </div>
+
+  <!-- Metade inferior com botão escondido inicialmente -->
+  <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+    <button id="startButton" style="
+      padding: 10px 26px;
+      font-size: 18px;
+      font-weight: bold;
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 30px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      width: 180px;
+      max-width: 80vw;
+      margin-top: 100px;
+    ">Start</button>
+    
+    
+    <div style="font-size: 12px; color: #999; margin-top: 20px;">beta version · created by Leo</div>
+  </div>
+
+  <!-- Rodapé com subtítulo -->
+  
+
 </div>
+
 <script>
-  window.addEventListener("DOMContentLoaded", () => {{
+  window.addEventListener("DOMContentLoaded", () => {
     const splash = document.getElementById("splash");
+    const startBtn = document.getElementById("startButton");
+    const fadeOverlay = document.getElementById("fadeOverlay");
+
     splash.style.opacity = 1;
-    splash.addEventListener("click", () => {{
-      document.getElementById("appContent").style.display = "block";
-      document.getElementById("audioPlayer").style.display = "block";
-      splash.style.display = "none";
-      if (document.documentElement.requestFullscreen) {{
-        document.documentElement.requestFullscreen();
-      }}
-    }});
-  }});
+
+    setTimeout(() => {
+        }, 2500);
+
+    startBtn.addEventListener("click", () => {
+      splash.setAttribute("id", "splashFade");
+      setTimeout(() => {
+        renderBooks();
+        document.getElementById("appContent").style.display = "block";
+        document.getElementById("audioPlayer").style.display = "block";
+        splash.style.display = "none";
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+        }
+      }, 1400);
+    });
+  });
 </script>
 
+
+
 <div id="appContent" style="display:none;"><header>
-  <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" onclick="location.reload()" style="cursor:pointer;" alt="Spring School Logo"/>
+  <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" onclick="renderBooks()" style="cursor:pointer;" alt="Spring School Logo"/>
 </header>
 
 <div id="mainView"></div>
@@ -1360,25 +1462,67 @@ function clearMain() {
   mainView.innerHTML = '';
 }
 
-function playAudio(url) {
+let currentButton = null;
+
+function playAudio(url, button) {
+  if (currentButton) {
+    currentButton.classList.remove("playing");
+  }
+  currentButton = button;
+  button.classList.add("playing");
+
   audioSource.src = url;
   audioPlayer.load();
   audioPlayer.play();
 }
 
 function renderBooks() {
+  // Verifica se já existe o botão Exit antes de criar
+  const existingExit = document.getElementById("exitBtn");
+  if (!existingExit) {
+    const exitBtn = document.createElement("button");
+    
+    exitBtn.textContent = "Exit";
+    exitBtn.id = "exitBtn";
+    exitBtn.onclick = () => window.close();
+    exitBtn.style.position = "fixed";
+    exitBtn.style.bottom = "70px";
+    exitBtn.style.right = "20px";
+    exitBtn.style.backgroundColor = "#eee";
+    exitBtn.style.color = "#555";
+    exitBtn.style.fontSize = "12px";
+    exitBtn.style.padding = "4px 10px";
+    exitBtn.style.borderRadius = "16px";
+    exitBtn.style.border = "none";
+    exitBtn.style.opacity = "0.4";
+    exitBtn.style.boxShadow = "none";
+    exitBtn.style.zIndex = "9999";
+    exitBtn.style.cursor = "pointer";
+document.body.appendChild(exitBtn);
+  }
+
+  
+  audioPlayer.pause();
+  audioPlayer.currentTime = 0;
   clearMain();
-  for (let book in data) {
+
+  setTimeout(() => {  }, 200);
+
+for (let book in data) {
     const btn = document.createElement("button");
     btn.textContent = book;
     const baseColor = bookColors[book] || "#607d8b";
-    btn.style.backgroundColor = baseColor + "cc";
+    btn.style.backgroundColor = baseColor;
     btn.onclick = () => renderLessons(book);
     mainView.appendChild(btn);
   }
 }
 
 function renderLessons(book) {
+  const exitBtn = document.getElementById("exitBtn");
+  if (exitBtn) exitBtn.remove();
+  audioPlayer.pause();
+  audioPlayer.currentTime = 0;
   clearMain();
   const back = document.createElement("button");
   back.textContent = book;
@@ -1398,6 +1542,10 @@ function renderLessons(book) {
 }
 
 function renderActivities(book, lesson) {
+  const exitBtn = document.getElementById("exitBtn");
+  if (exitBtn) exitBtn.remove();
+  audioPlayer.pause();
+  audioPlayer.currentTime = 0;
   clearMain();
   const back = document.createElement("button");
   back.textContent = book + " / " + lesson;
@@ -1411,12 +1559,11 @@ function renderActivities(book, lesson) {
     btn.textContent = item.title;
     const baseColor = bookColors[book] || "#607d8b";
     btn.style.backgroundColor = baseColor + "cc";
-    btn.onclick = () => playAudio(item.url);
+    btn.onclick = () => playAudio(item.url, btn);
     mainView.appendChild(btn);
   }
 }
 
-renderBooks();
 </script>
 
 </body>
