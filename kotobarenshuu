@@ -1,0 +1,271 @@
+
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kotoba Renshuu</title>
+<style>body{font-family:'Segoe UI',sans-serif;background:#e6f2ff;margin:0;text-align:center;padding:20px}h1{color:#003366}.menu,.mode-select,.game-screen{display:none}.visible{display:block !important}button{font-size:20px;margin:10px;padding:12px 24px;border-radius:10px;border:2px solid #003366;background-color:#f0f0f0;color:#003366;cursor:pointer}#question{font-size:48px;margin-top:30px}#hiragana{font-size:24px;color:#f0f0f0;margin-bottom:20px}.options{display:flex;flex-wrap:wrap;justify-content:center;gap:15px;margin:20px 0}.options button.correct{background-color:#4caf50;color:white}.options button.incorrect{background-color:#f44336;color:white}#progressBar{width:90%;height:8px;background:#ccc;position:fixed;bottom:48px;left:5%;border-radius:4px;}#progress{height:100%;width:0%;background:#4caf50;transition:width 0.3s ease}button{font-size:clamp(14px,2.5vw,24px);white-space:normal;word-break:break-word;overflow-wrap:anywhere;max-width:100%}#question{font-size:clamp(36px,8vw,64px); word-break:break-word; margin-bottom: 10px;}#hiragana{font-size:clamp(20px,4vw,28px); color:#111; margin-bottom: 20px;}
+h2 {
+  color: #003366;
+  font-size: clamp(22px, 4vw, 32px);
+  margin-bottom: 20px;
+}
+button {
+  font-size: clamp(16px, 2vw, 22px);
+  padding: 12px 20px;
+  margin: 10px;
+  border-radius: 12px;
+  border: none;
+  background-color: #66b2ff;
+  color: white;
+  transition: background-color 0.2s;
+}
+button:hover {
+  background-color: #007acc;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.menu {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.menu.visible {
+  display: block !important;
+  opacity: 1;
+}
+
+body {
+  padding-bottom: 60px; /* espaço para a barra de voltar */
+}
+.menu {
+  overflow: visible !important;
+}
+
+body { padding-bottom: 60px; }
+#customWordList { box-sizing: border-box; }
+/* Melhorias no layout do menu de adicionar/editar */
+#addWordMenu button {
+  display: inline-block;
+  margin: 10px 5px;
+  font-size: clamp(14px, 2.5vw, 18px);
+  padding: 10px 16px;
+  max-width: 100%;
+}
+
+#addWordMenu input, #addWordMenu select {
+  font-size: 16px;
+  padding: 8px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#addWordMenu h2 {
+  font-size: clamp(22px, 4vw, 30px);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Evita que o botão inferior sobreponha conteúdo */
+#addWordMenu {
+  padding-bottom: 80px;
+}
+
+.main-title {
+  font-size: clamp(32px, 7vw, 56px);
+  color: #003366;
+  animation: pulse 2s infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.85; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+
+/* Melhorias visuais */
+#modeSelectFirst button {
+  min-width: 260px;
+  display: block;
+  margin: 12px auto;
+}
+
+#modeSelectFirst ruby {
+  display: inline-block;
+  text-align: center;
+}
+
+.main-title {
+  font-size: clamp(36px, 8vw, 64px);
+  font-weight: 800;
+  font-family: 'Segoe UI', 'Arial Black', sans-serif;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+#modeSelectFirst button {
+  min-width: 280px;
+  min-height: 60px;
+  margin: 12px auto;
+  text-align: center;
+}
+
+#modeSelectFirst ruby {
+  display: inline-block;
+  text-align: center;
+  line-height: 1.2;
+  font-size: 95%;
+}
+
+.main-title {
+  font-size: clamp(38px, 8vw, 66px);
+  font-weight: 900;
+  font-family: 'Segoe UI', 'Arial Black', sans-serif;
+  letter-spacing: 1.5px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  animation: pulseTitle 2.4s ease-in-out infinite;
+}
+
+@keyframes pulseTitle {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.04); opacity: 0.92; }
+}
+
+/* Redução de espaçamento geral */
+body {
+  padding-top: 10px;
+  padding-bottom: 30px;
+  margin: 0;
+}
+
+#modeSelectFirst {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+#modeSelectFirst img {
+  margin-bottom: 4px !important;
+}
+
+.main-title {
+  margin-top: 4px;
+  margin-bottom: 12px;
+}
+
+/* Botões mais compactos */
+#modeSelectFirst button {
+  padding: 10px 18px;
+  min-height: 56px;
+}
+
+/* Redução de espaçamento no furigana */
+ruby {
+  font-size: 90%;
+  line-height: 1;
+  ruby-position: over;
+}
+
+#modeSelectFirst ruby {
+  display: inline-block;
+  text-align: center;
+  font-size: 90%;
+  line-height: 1.1;
+}
+
+#modeSelectFirst rt {
+  font-size: 0.55em;
+  line-height: 1;
+}
+
+#modeSelectFirst button div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#modeSelectFirst ruby {
+  display: inline;
+  font-size: 100%;
+  line-height: 1;
+  ruby-position: over;
+}
+
+#modeSelectFirst rt {
+  font-size: 0.5em;
+  line-height: 1;
+  color: #111 !important;
+}
+
+ruby {
+  font-size: 100%;
+  line-height: 1;
+  ruby-position: over;
+  white-space: nowrap;
+}
+
+rt {
+  font-size: 0.5em;
+  line-height: 1;
+  color: #111 !important;
+}
+
+.furigana { color: #111 !important; }
+</style>
+</head>
+<body>
+<div class="menu visible" id="modeSelectFirst"><img alt="Spring School" onclick="show('modeSelectFirst')" src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" style="height: 80px; margin-bottom: 10px;; cursor: pointer;"/><h1 class="main-title">ことば練習</h1><button onclick="setModeAndGo('kanjiHiraToPt')"><div style="font-size:22px; text-align:center;">日本語 ➜ Português</div><div style="font-size:14px; color:#f0f0f0;">Kanji + Leitura - Tradução</div></button>
+<button onclick="setModeAndGo('kanjiToPt')"><div style="font-size:22px;">日本語 ➜ Português</div><div style="font-size:14px; color:#f0f0f0;">Kanji - Tradução</div></button><button onclick="setModeAndGo('kanjiToHira')"><div style="font-size:22px;">読み方</div><div style="font-size:14px; color:#f0f0f0;">Kanji ➜ Hiragana</div></button><hr style="width: 80%; border-top: 1px solid #ccc; margin: 24px auto;"/><button onclick="showCustomMenu()">🎯 Escolher suas palavras</button><button onclick="show('addWordMenu')">✏️ Gerenciar Vocabulário</button></div>
+<div class="menu" id="categoryMenu">
+<h2>Escolha uma categoria</h2>
+<button onclick="selectCategory('Sinalização e Transporte')">🚦 Sinalização e Transporte</button>
+<button onclick="selectCategory('Locais Públicos')">🏥 Locais Públicos</button>
+<button onclick="selectCategory('Compras e Promoções')">🛒 Compras e Promoções</button>
+<button onclick="selectCategory('Casa e Escritório')">🏠 Casa e Escritório</button>
+<button onclick="selectCategory('Tecnologia e Comunicação')">📱 Tecnologia e Comunicação</button>
+</div>
+<div class="mode-select menu" id="modeMenu">
+<h2>Escolha o modo</h2>
+<button onclick="startGame('kanjiToPt')">Kanji → Significado</button>
+<button onclick="startGame('kanjiToHira')">Kanji → Hiragana</button>
+<button onclick="startGame('kanjiHiraToPt')">Kanji com Hiragana → Significado</button>
+</div>
+<div class="game-screen menu" id="gameScreen">
+<div id="question">?</div>
+<div id="hiragana"></div>
+<div class="options" id="options"></div>
+<div id="progressBar"><div id="progress"></div></div>
+<div id="progressText" style="margin-top:10px; font-size:14px; color:#333;"></div><button id="playAgainBtn" onclick="restartGame()" style="display:none; margin-top:20px;">🔁 Jogar Novamente<div style="font-size:12px; color:#999;">もう一度プレイ</div></button></div>
+<script>const allData={"Sinalização e Transporte": [{"jp": "止まれ","hira": "とまれ","pt": "Pare"},{"jp": "一時停止","hira": "いちじていし","pt": "Parada obrigatória temporária"},{"jp": "通行止","hira": "つうこうどめ","pt": "Via bloqueada"},{"jp": "進入禁止","hira": "しんにゅうきんし","pt": "Entrada proibida"},{"jp": "徐行","hira": "じょこう","pt": "Vá devagar"},{"jp": "駐車禁止","hira": "ちゅうしゃきんし","pt": "Proibido estacionar"},{"jp": "駐車場","hira": "ちゅうしゃじょう","pt": "Estacionamento"},{"jp": "有料","hira": "ゆうりょう","pt": "Pago"},{"jp": "無料","hira": "むりょう","pt": "Gratuito"},{"jp": "制限速度","hira": "せいげんそくど","pt": "Velocidade máxima"},{"jp": "ETC","hira": "イーティーシー","pt": "Sistema eletrônico de pedágio"},{"jp": "パーキング","hira": "パーキング","pt": "Estacionamento"},{"jp": "横断歩道","hira": "おうだんほどう","pt": "Faixa de pedestre"},{"jp": "歩行者優先","hira": "ほこうしゃゆうせん","pt": "Prioridade ao pedestre"},{"jp": "注意","hira": "ちゅうい","pt": "Atenção/Cuidado"},{"jp": "子供","hira": "こども","pt": "Criança"},{"jp": "工事中","hira": "こうじちゅう","pt": "Em obras"},{"jp": "落石注意","hira": "らくせきちゅうい","pt": "Cuidado: queda de pedras"},{"jp": "スクールゾーン","hira": "スクールゾーン","pt": "Área escolar"}],"Locais Públicos": [{"jp": "大","hira": "だい","pt": "Grande"},{"jp": "小","hira": "しょう","pt": "Pequeno"},{"jp": "男","hira": "おとこ","pt": "Homem"},{"jp": "女","hira": "おんな","pt": "Mulher"},{"jp": "トイレ","hira": "トイレ","pt": "Banheiro"},{"jp": "お手洗い","hira": "おてあらい","pt": "Lavabo/banheiro"},{"jp": "病院","hira": "びょういん","pt": "Hospital"},{"jp": "薬","hira": "くすり","pt": "Remédio"},{"jp": "内科","hira": "ないか","pt": "Clínica geral"},{"jp": "小児科","hira": "しょうにか","pt": "Pediatria"},{"jp": "処方箋","hira": "しょほうせん","pt": "Receita médica"},{"jp": "ドラッグストア","hira": "ドラッグストア","pt": "Farmácia"}],"Compras e Promoções": [{"jp": "割引","hira": "わりびき","pt": "Desconto"},{"jp": "半額","hira": "はんがく","pt": "Metade do preço"},{"jp": "特売","hira": "とくばい","pt": "Promoção especial"},{"jp": "お買い得","hira": "おかいどく","pt": "Boa compra"},{"jp": "安い","hira": "やすい","pt": "Barato"},{"jp": "値下げ","hira": "ねさげ","pt": "Redução de preço"},{"jp": "処分価格","hira": "しょぶんかかく","pt": "Preço de liquidação"},{"jp": "本日限り","hira": "ほんじつかぎり","pt": "Somente hoje"},{"jp": "消費期限","hira": "しょうひきげん","pt": "Prazo de consumo"},{"jp": "賞味期限","hira": "しょうみきげん","pt": "Prazo de melhor sabor"},{"jp": "税込","hira": "ぜいこみ","pt": "Com imposto"},{"jp": "税別","hira": "ぜいべつ","pt": "Sem imposto"},{"jp": "合計","hira": "ごうけい","pt": "Total"},{"jp": "カード可","hira": "カードか","pt": "Aceita cartão"},{"jp": "セール","hira": "セール","pt": "Liquidação"},{"jp": "ポイント","hira": "ポイント","pt": "Pontos"}],"Casa e Escritório": [{"jp": "水","hira": "みず","pt": "Água"},{"jp": "火","hira": "ひ","pt": "Fogo"},{"jp": "玄関","hira": "げんかん","pt": "Entrada da casa"},{"jp": "靴","hira": "くつ","pt": "Sapatos"},{"jp": "靴を脱いでください","hira": "くつをぬいでください","pt": "Por favor,tire os sapatos"},{"jp": "使用中","hira": "しようちゅう","pt": "Em uso"},{"jp": "故障中","hira": "こしょうちゅう","pt": "Quebrado/Fora de serviço"},{"jp": "会議室","hira": "かいぎしつ","pt": "Sala de reuniões"},{"jp": "非常口","hira": "ひじょうぐち","pt": "Saída de emergência"},{"jp": "エレベーター","hira": "エレベーター","pt": "Elevador"},{"jp": "オフィス","hira": "オフィス","pt": "Escritório"}],"Tecnologia e Comunicação": [{"jp": "郵便","hira": "ゆうびん","pt": "Correio"},{"jp": "郵便番号","hira": "ゆうびんばんごう","pt": "Código postal"},{"jp": "配達","hira": "はいたつ","pt": "Entrega"},{"jp": "不在","hira": "ふざい","pt": "Ausente"},{"jp": "電","hira": "でん","pt": "Eletricidade"},{"jp": "電話","hira": "でんわ","pt": "Telefone"},{"jp": "電車","hira": "でんしゃ","pt": "Trem"},{"jp": "充電中","hira": "じゅうでんちゅう","pt": "Carregando"},{"jp": "開く","hira": "ひらく/あく","pt": "Abrir"},{"jp": "閉じる","hira": "とじる","pt": "Fechar"},{"jp": "Wi-Fi","hira": "わいふぁい","pt": "Internet sem fio"},{"jp": "スマホ","hira": "すまほ","pt": "Smartphone"},{"jp": "アプリ","hira": "アプリ","pt": "Aplicativo"}]};let currentCategory="";let currentMode="";let remaining=[];let total=0;let current=null;function show(id){document.querySelectorAll('.menu').forEach(el=>el.classList.remove('visible'));document.getElementById(id).classList.add('visible');}function selectCategory(cat){currentCategory=cat;show("modeMenu");}function startGame(mode){currentMode=mode;remaining=[...allData[currentCategory]].sort(()=>Math.random()-0.5);total=remaining.length;show("gameScreen");updateProgress();nextQuestion();}function nextQuestion(){if(remaining.length===0){document.getElementById('question').textContent="Parabéns!";document.getElementById('hiragana').textContent="";document.getElementById('options').innerHTML="";return;}current=remaining.shift();document.getElementById("question").textContent=current.jp;document.getElementById("hiragana").textContent=(currentMode==="kanjiHiraToPt")? current.hira : "";const correct=currentMode==="kanjiToPt" || currentMode==="kanjiHiraToPt" ? current.pt : current.hira;const options=[correct];while(options.length<4){const rand=allData[currentCategory][Math.floor(Math.random()*allData[currentCategory].length)];const distractor=currentMode==="kanjiToPt" || currentMode==="kanjiHiraToPt" ? rand.pt : rand.hira;if(!options.includes(distractor))options.push(distractor);}options.sort(()=>Math.random()-0.5);const container=document.getElementById("options");container.innerHTML="";options.forEach(opt=>{const btn=document.createElement("button");btn.textContent=opt;btn.onclick=()=>{if(opt===correct){btn.classList.add("correct");updateProgress();setTimeout(nextQuestion,500);}else{btn.classList.add("incorrect");}};container.appendChild(btn);});}function updateProgress(){const percent=100*(total-remaining.length)/total;document.getElementById("progress").style.width=percent+"%";}function showCustomMenu(){const list=document.getElementById("customWordList");list.innerHTML="";Object.entries(allData).forEach(([cat,words])=>{const group=document.createElement("div");const title=document.createElement("h3");title.textContent=cat;group.appendChild(title);words.forEach((item,index)=>{const label=document.createElement("label");label.style.display="block";const checkbox=document.createElement("input");checkbox.type="checkbox";checkbox.value=JSON.stringify(item);label.appendChild(checkbox);label.appendChild(document.createTextNode(` ${item.jp}(${item.pt})`));group.appendChild(label);});list.appendChild(group);});show("customMenu");}function startCustomGame(){const checkboxes=document.querySelectorAll("#customWordList input[type='checkbox']:checked");if(checkboxes.length===0){alert("Por favor,selecione pelo menos uma palavra.");return;}currentCategory="customSet";currentMode = document.getElementById("customModeSelect").value;remaining=Array.from(checkboxes).map(cb=>JSON.parse(cb.value)).sort(()=>Math.random()-0.5);total=remaining.length;show("gameScreen");updateProgress();nextQuestion();}let customData=[];function startCustomGame(){const checkboxes=document.querySelectorAll("#customWordList input[type='checkbox']:checked");if(checkboxes.length===0){alert("Por favor,selecione pelo menos uma palavra.");return;}currentCategory="customSet";currentMode = document.getElementById("customModeSelect").value;customData=Array.from(checkboxes).map(cb=>JSON.parse(cb.value));remaining=[...customData].sort(()=>Math.random()-0.5);total=remaining.length;show("gameScreen");updateProgress();nextQuestion();}const originalNextQuestion=nextQuestion;nextQuestion=function(){if(remaining.length===0){document.getElementById('question').textContent="Parabéns!";document.getElementById('hiragana').textContent="";document.getElementById('options').innerHTML="";return;}current=remaining.shift();document.getElementById("question").textContent=current.jp;document.getElementById("hiragana").textContent=(currentMode==="kanjiHiraToPt")? current.hira : "";const correct=currentMode==="kanjiToPt" || currentMode==="kanjiHiraToPt" ? current.pt : current.hira;const options=[correct];const sourcePool=(currentCategory==="customSet")? customData : allData[currentCategory];while(options.length<4){const rand=sourcePool[Math.floor(Math.random()*sourcePool.length)];const distractor=currentMode==="kanjiToPt" || currentMode==="kanjiHiraToPt" ? rand.pt : rand.hira;if(!options.includes(distractor))options.push(distractor);}options.sort(()=>Math.random()-0.5);const container=document.getElementById("options");container.innerHTML="";options.forEach(opt=>{const btn=document.createElement("button");btn.textContent=opt;btn.onclick=()=>{if(opt===correct){btn.classList.add("correct");updateProgress();setTimeout(nextQuestion,500);}else{btn.classList.add("incorrect");}};container.appendChild(btn);});};const savedData=localStorage.getItem("userWords");if(savedData){const userWords=JSON.parse(savedData);Object.entries(userWords).forEach(([cat,words])=>{if(!allData[cat])allData[cat]=[];allData[cat]=allData[cat].concat(words);});}function addNewWord(){const cat=document.getElementById("newCategory").value.trim();const jp=document.getElementById("newJP").value.trim();const hira=document.getElementById("newHira").value.trim();const pt=document.getElementById("newPT").value.trim();if(!cat || !jp || !hira || !pt){alert("Por favor,preencha todos os campos.");return;}const entry={jp,hira,pt};if(!allData[cat])allData[cat]=[];allData[cat].push(entry);let stored=localStorage.getItem("userWords");let userWords=stored ? JSON.parse(stored):{};if(!userWords[cat])userWords[cat]=[];userWords[cat].push(entry);localStorage.setItem("userWords",JSON.stringify(userWords));alert("Palavra adicionada com sucesso!");document.getElementById("newCategory").value="";document.getElementById("newJP").value="";document.getElementById("newHira").value="";document.getElementById("newPT").value="";show("categoryMenu");}function renderCategoryMenu(){const menu=document.getElementById("categoryMenu");const existingButtons=menu.querySelectorAll("button");existingButtons.forEach(btn=>btn.remove());Object.keys(allData).forEach(cat=>{const btn=document.createElement("button");btn.textContent=cat;btn.onclick=()=>selectCategory(cat);menu.appendChild(btn);});}window.onload=()=>{renderCategoryMenu();};function addNewWord(){const cat=document.getElementById("newCategory").value.trim();const jp=document.getElementById("newJP").value.trim();const hira=document.getElementById("newHira").value.trim();const pt=document.getElementById("newPT").value.trim();if(!cat || !jp || !hira || !pt){alert("Por favor,preencha todos os campos.");return;}const entry={jp,hira,pt};if(!allData[cat])allData[cat]=[];allData[cat].push(entry);let stored=localStorage.getItem("userWords");let userWords=stored ? JSON.parse(stored):{};if(!userWords[cat])userWords[cat]=[];userWords[cat].push(entry);localStorage.setItem("userWords",JSON.stringify(userWords));alert("Palavra adicionada com sucesso!");document.getElementById("newCategory").value="";document.getElementById("newJP").value="";document.getElementById("newHira").value="";document.getElementById("newPT").value="";renderCategoryMenu();show("categoryMenu");}function updateCategorySelect(){const select=document.getElementById("existingCategories");if(!select)return;select.innerHTML="";Object.keys(allData).sort().forEach(cat=>{const opt=document.createElement("option");opt.value=cat;opt.textContent=cat;select.appendChild(opt);});}function addNewWord(keepFilling=false){const select=document.getElementById("existingCategories");const inputCat=document.getElementById("newCategory").value.trim();const cat=inputCat || select.value;const jp=document.getElementById("newJP").value.trim();const hira=document.getElementById("newHira").value.trim();const pt=document.getElementById("newPT").value.trim();if(!cat || !jp || !hira || !pt){alert("Por favor,preencha todos os campos.");return;}const entry={jp,hira,pt};if(!allData[cat])allData[cat]=[];allData[cat].push(entry);let stored=localStorage.getItem("userWords");let userWords=stored ? JSON.parse(stored):{};if(!userWords[cat])userWords[cat]=[];userWords[cat].push(entry);localStorage.setItem("userWords",JSON.stringify(userWords));alert("Palavra adicionada com sucesso!");document.getElementById("newJP").value="";document.getElementById("newHira").value="";document.getElementById("newPT").value="";if(!keepFilling){document.getElementById("newCategory").value="";renderCategoryMenu();show("categoryMenu");}else{updateCategorySelect();}}const originalShow=show;
+show=function(id){
+  if(id==="addWordMenu"){
+    updateCategorySelect();
+    setTimeout(updateWordDropdown, 100);
+  }
+  originalShow(id);
+};
+
+function setModeAndGo(mode) {
+  currentMode = mode;
+  renderCategoryMenu();
+  show('categoryMenu');
+}
+
+function selectCategory(cat) {
+  currentCategory = cat;
+  startGame(currentMode);
+}
+
+function updateProgress() {
+  const percent = 100 * (total - remaining.length)
