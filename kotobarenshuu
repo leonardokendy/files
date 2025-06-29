@@ -5,7 +5,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Kotoba Renshuu</title>
+<title>Vocabulário Japonês</title>
 <style>body{font-family:'Segoe UI',sans-serif;background:#e6f2ff;margin:0;text-align:center;padding:20px}h1{color:#003366}.menu,.mode-select,.game-screen{display:none}.visible{display:block !important}button{font-size:20px;margin:10px;padding:12px 24px;border-radius:10px;border:2px solid #003366;background-color:#f0f0f0;color:#003366;cursor:pointer}#question{font-size:48px;margin-top:30px}#hiragana{font-size:24px;color:#f0f0f0;margin-bottom:20px}.options{display:flex;flex-wrap:wrap;justify-content:center;gap:15px;margin:20px 0}.options button.correct{background-color:#4caf50;color:white}.options button.incorrect{background-color:#f44336;color:white}#progressBar{width:90%;height:8px;background:#ccc;position:fixed;bottom:48px;left:5%;border-radius:4px;}#progress{height:100%;width:0%;background:#4caf50;transition:width 0.3s ease}button{font-size:clamp(14px,2.5vw,24px);white-space:normal;word-break:break-word;overflow-wrap:anywhere;max-width:100%}#question{font-size:clamp(36px,8vw,64px); word-break:break-word; margin-bottom: 10px;}#hiragana{font-size:clamp(20px,4vw,28px); color:#111; margin-bottom: 20px;}
 h2 {
   color: #003366;
@@ -268,4 +268,194 @@ function selectCategory(cat) {
 }
 
 function updateProgress() {
-  const percent = 100 * (total - remaining.length)
+  const percent = 100 * (total - remaining.length) / total;
+  document.getElementById("progress").style.width = percent + "%";
+  document.getElementById("progressText").textContent = `${total - remaining.length} de ${total}`;
+}
+
+function nextQuestion() {
+  if (remaining.length === 0) {
+    document.getElementById('question').textContent = "Parabéns!";
+    document.getElementById('hiragana').textContent = "";
+    document.getElementById('options').innerHTML = "";
+    document.getElementById("playAgainBtn").style.display = "inline-block";
+    document.getElementById("progressText").textContent = "";
+    return;
+  }
+
+  document.getElementById("playAgainBtn").style.display = "none";
+
+  current = remaining.shift();
+  document.getElementById("question").textContent = current.jp;
+  document.getElementById("hiragana").textContent =
+    (currentMode === "kanjiHiraToPt") ? current.hira : "";
+
+  const correct = (currentMode === "kanjiToPt" || currentMode === "kanjiHiraToPt") ? current.pt : current.hira;
+  const options = [correct];
+  const sourcePool = (currentCategory === "customSet") ? customData : allData[currentCategory];
+
+  while (options.length < 4) {
+    const rand = sourcePool[Math.floor(Math.random() * sourcePool.length)];
+    const distractor = (currentMode === "kanjiToPt" || currentMode === "kanjiHiraToPt") ? rand.pt : rand.hira;
+    if (!options.includes(distractor)) options.push(distractor);
+  }
+
+  options.sort(() => Math.random() - 0.5);
+  const container = document.getElementById("options");
+  container.innerHTML = "";
+  options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.textContent = opt;
+    btn.onclick = () => {
+      if (opt === correct) {
+        btn.classList.add("correct");
+        updateProgress();
+        setTimeout(nextQuestion, 500);
+      } else {
+        btn.classList.add("incorrect");
+      }
+    };
+    container.appendChild(btn);
+  });
+
+  updateProgress();
+}
+
+function restartGame() {
+  remaining = [...allData[currentCategory]].sort(() => Math.random() - 0.5);
+  total = remaining.length;
+  document.getElementById("playAgainBtn").style.display = "none";
+  show("gameScreen");
+  updateProgress();
+  nextQuestion();
+}
+
+function updateWordDropdown() {
+  const catSelect = document.getElementById("existingCategories");
+  const wordSelect = document.getElementById("existingWords");
+  const selectedCat = catSelect.value;
+  const section = document.getElementById("wordEditSection");
+
+  if (!selectedCat || !allData[selectedCat]) {
+    section.style.display = "none";
+    return;
+  }
+
+  wordSelect.innerHTML = '<option value="">Selecione uma palavra</option>';
+  allData[selectedCat].forEach((item, index) => {
+    const opt = document.createElement("option");
+    opt.value = index;
+    opt.textContent = `${item.jp} (${item.pt})`;
+    wordSelect.appendChild(opt);
+  });
+
+  section.style.display = "block";
+}
+
+function fillWordFields() {
+  const cat = document.getElementById("existingCategories").value;
+  const index = document.getElementById("existingWords").value;
+  if (!cat || index === "") return;
+
+  const word = allData[cat][index];
+  document.getElementById("newJP").value = word.jp;
+  document.getElementById("newHira").value = word.hira;
+  document.getElementById("newPT").value = word.pt;
+}
+
+function saveWordEdit() {
+  const cat = document.getElementById("existingCategories").value;
+  const index = document.getElementById("existingWords").value;
+  if (!cat || index === "") return;
+
+  if (!confirm("Deseja salvar as alterações nesta palavra?")) return;
+
+  allData[cat][index] = {
+    jp: document.getElementById("newJP").value.trim(),
+    hira: document.getElementById("newHira").value.trim(),
+    pt: document.getElementById("newPT").value.trim()
+  };
+
+  let stored = localStorage.getItem("userWords");
+  if (stored) {
+    let userWords = JSON.parse(stored);
+    if (userWords[cat]) {
+      userWords[cat][index] = allData[cat][index];
+      localStorage.setItem("userWords", JSON.stringify(userWords));
+    }
+  }
+
+  alert("Palavra atualizada com sucesso!");
+  updateWordDropdown();
+}
+
+function removeWordFromCategory() {
+  const cat = document.getElementById("existingCategories").value;
+  const index = document.getElementById("existingWords").value;
+  if (!cat || index === "") return;
+  if (!confirm("Tem certeza que deseja remover esta palavra?")) return;
+
+  allData[cat].splice(index, 1);
+
+  let stored = localStorage.getItem("userWords");
+  if (stored) {
+    let userWords = JSON.parse(stored);
+    if (userWords[cat]) {
+      userWords[cat].splice(index, 1);
+      localStorage.setItem("userWords", JSON.stringify(userWords));
+    }
+  }
+
+  alert("Palavra removida.");
+  updateWordDropdown();
+  document.getElementById("newJP").value = "";
+  document.getElementById("newHira").value = "";
+  document.getElementById("newPT").value = "";
+}
+
+function removeCategoryFromSystem() {
+  const cat = document.getElementById("existingCategories").value;
+  if (!cat || !confirm(`Tem certeza que deseja remover a categoria "${cat}" por completo?`)) return;
+
+  delete allData[cat];
+
+  let stored = localStorage.getItem("userWords");
+  if (stored) {
+    let userWords = JSON.parse(stored);
+    delete userWords[cat];
+    localStorage.setItem("userWords", JSON.stringify(userWords));
+  }
+
+  alert("Categoria removida.");
+  updateCategorySelect();
+  document.getElementById("wordEditSection").style.display = "none";
+  document.getElementById("newJP").value = "";
+  document.getElementById("newHira").value = "";
+  document.getElementById("newPT").value = "";
+}
+</script>
+<div class="menu" id="customMenu"><h2>Selecione as palavras</h2><h3 style="margin:10px 0;">Modo de Jogo</h3><select id="customModeSelect" style="font-size:16px; padding:6px; margin-bottom: 20px;"><option value="kanjiToPt">Kanji → Português</option><option value="kanjiToHira">Kanji → Hiragana</option><option value="kanjiHiraToPt">Kanji com Hiragana → Português</option></select><div id="customWordList" style="max-height: calc(100vh - 200px); overflow-y: auto; margin: 20px;"></div><button onclick="startCustomGame()">Começar Jogo</button></div><div class="menu" id="addWordMenu"><h2>Adicionar Nova Palavra</h2>
+<div style="max-width: 400px; margin: auto; text-align: left;">
+<label>Categoria:</label><br/>
+<select id="existingCategories" onchange="updateWordDropdown()" style="width:100%;"></select>
+<input id="newCategory" placeholder="Ou digite uma nova categoria" style="width:100%; margin-top: 5px;" type="text"/><br/><br/>
+<label>Palavra (Kanji ou Katakana):</label><br/>
+<input id="newJP" placeholder="Ex: 駅" style="width:100%;" type="text"/><br/><br/>
+<label>Leitura (Hiragana):</label><br/>
+<input id="newHira" placeholder="Ex: えき" style="width:100%;" type="text"/><br/><br/>
+<label>Significado (Português):</label><br/>
+<input id="newPT" placeholder="Ex: Estação" style="width:100%;" type="text"/><div style="text-align:center; margin-top:20px; margin-bottom:20px;"><button onclick="addNewWord(true)" style="float: right;">Salvar e Adicionar Outra</button></div><br/><br/>
+</div>
+<div style="border-top:1px solid #ccc; margin:30px auto 20px; width:90%; max-width:400px;"></div><div style="text-align:center; margin-top:20px; margin-bottom:20px;"></div><div id="wordEditSection" style="margin-top: 30px; display: block; border: 1px solid #ccc; padding: 15px; border-radius: 8px;background: #f9f9f9; max-width: 400px; margin-left: auto; margin-right: auto;"><h3 style="margin-bottom: 10px; text-align: left;">✏️ Editar Palavra Existente</h3>
+<label>Editar palavra existente:</label><br/>
+<select id="existingWords" onchange="fillWordFields()" style="width:100%; margin-bottom:10px;">
+<option value="">Selecione uma palavra</option>
+</select><div style="text-align: center; margin-bottom: 20px;"></div><br/>
+<button onclick="saveWordEdit()">💾 Salvar Alterações</button>
+<button onclick="removeWordFromCategory()" style="margin-left:10px;">❌ Remover Palavra</button>
+<button onclick="removeCategoryFromSystem()" style="margin-left:10px;">🗑️ Remover Categoria</button>
+</div>
+</div>
+<div id="globalBackBar" style="position:fixed; bottom:0; left:0; width:100%; background:#f8f8f8; border-top:1px solid #ccc; padding:8px; text-align:center; z-index:9999;"><button onclick="show('modeSelectFirst')" style="font-size:16px; padding:6px 12px; border:none; background:#eee; color:#333; cursor:pointer;">⬅️ Voltar</button></div>
+</body>
+</html>
