@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo de Jogos - Spring School</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5faff;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #4a90e2;
+      color: white;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+    header img {
+      height: 50px;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin: 0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      padding: 2rem;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .card h2 {
+      margin: 0.5rem 0;
+      font-size: 1.2rem;
+    }
+    .card p {
+      font-size: 0.95rem;
+      color: #555;
+    }
+    .card .tag {
+      font-size: 0.75rem;
+      color: #fff;
+      background: #4a90e2;
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      margin-top: 0.5rem;
+    }
+    .card a {
+      display: inline-block;
+      margin-top: 1rem;
+      background: #ffc107;
+      color: #000;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" alt="Spring School Logo">
+    <h1>Catálogo de Jogos</h1>
+  </header>
+
+  <main class="grid">
+    <div class="card">
+      <h2>🎧 Listening Hub</h2>
+      <p>Player de áudio com livros e workbooks organizados por lição.</p>
+      <div class="tag">Listening</div>
+      <a href="#">Abrir</a>
+    </div>
+
+    <div class="card">
+      <h2>🕵️‍♂️ Secret Word</h2>
+      <p>Descubra a palavra secreta com dicas! Modos de 3 a 6 letras, ideal para desafiar o vocabulário.</p>
+      <div class="tag">Vocabulário</div>
+      <a href="#">Jogar</a>
+    </div>
+  </main>
+</body>
+</html>
