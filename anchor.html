@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SPRINT - Spring Platform</title>
+  <title>Catálogo de Jogos - Spring School</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -15,44 +15,33 @@
       background: #4a90e2;
       color: white;
       padding: 1rem;
-      text-align: center;
-    }
-    header h1 {
-      font-size: 2.2rem;
-      margin: 0;
-    }
-    header p {
-      font-size: 0.95rem;
-      margin: 0.25rem 0 0;
-      font-style: italic;
-    }
-    #userControls {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 0.5rem 1rem;
+      justify-content: space-between;
+    }
+    header img {
+      height: 50px;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin: 0 1rem;
     }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 1rem;
-      padding: 1rem;
+      padding: 2rem;
     }
     .card {
       background: white;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      padding: 1.2rem;
+      padding: 1.5rem;
       text-align: center;
     }
     .card h2 {
-      margin: 0.2rem 0;
+      margin: 0.5rem 0;
       font-size: 1.2rem;
-    }
-    .card .creator {
-      font-size: 0.75rem;
-      color: #777;
-      margin-bottom: 0.5rem;
     }
     .card p {
       font-size: 0.95rem;
@@ -65,36 +54,17 @@
       display: inline-block;
       padding: 0.25rem 0.5rem;
       border-radius: 6px;
-      margin: 0.5rem 0 0.25rem;
-    }
-    .card .btn-row {
       margin-top: 0.5rem;
     }
     .card a {
       display: inline-block;
-      margin-top: 0.2rem;
+      margin-top: 1rem;
       background: #ffc107;
       color: #000;
       text-decoration: none;
       padding: 0.5rem 1rem;
       border-radius: 6px;
       font-weight: bold;
-    }
-    #tagFilters {
-      text-align: center;
-      padding: 1rem 0 0.5rem;
-    }
-    #tagFilters button {
-      margin: 0.25rem;
-      padding: 0.25rem 0.75rem;
-      border-radius: 6px;
-      border: none;
-      background: #ddd;
-      cursor: pointer;
-    }
-    #tagFilters button.active {
-      background: #4a90e2;
-      color: white;
     }
     footer {
       position: fixed;
@@ -116,22 +86,48 @@
       font-weight: bold;
       cursor: pointer;
     }
+    #homeView, #databaseView {
+      display: none;
+    }
+    #homeView.active, #databaseView.active {
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem;
+    }
+    th, td {
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    .btn-bar {
+      margin: 1rem 2rem;
+    }
+    .btn-bar button, .btn-bar select {
+      margin-right: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+    .login-btn {
+      margin-right: 1rem;
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>SPRINT</h1>
-    <p>Spring Platform for Resources, Ideas, Notes and Tools</p>
-  </header>
-
-  <div id="userControls">
+    <div style="display: flex; align-items: center;">
+      <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" alt="Spring School Logo">
+      <h1>Catálogo de Jogos</h1>
+    </div>
     <div>
-      <button id="loginBtn">🔐 Login</button>
+      <button id="loginBtn" class="login-btn">🔐 Login</button>
       <span id="userInfo"></span>
     </div>
-  </div>
+  </header>
 
-  <div id="tagFilters"></div>
   <main id="homeView" class="grid active"></main>
 
   <main id="databaseView">
@@ -162,77 +158,140 @@
     <button onclick="switchView('database')">🗂️ Database</button>
   </footer>
 
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script>
-    const selectedTags = new Set();
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2trlGj_o_0ZXnJekL6NlZP7rS-bZdWVY",
+      authDomain: "sprint-byleo.firebaseapp.com",
+      projectId: "sprint-byleo",
+      storageBucket: "sprint-byleo.firebasestorage.app",
+      messagingSenderId: "306149887616",
+      appId: "1:306149887616:web:5a3d7efbb718121fe3e065"
+    };
 
-    function renderTagsFilter(tags) {
-      const container = document.getElementById('tagFilters');
-      container.innerHTML = '';
-      [...tags].sort().forEach(tag => {
-        const btn = document.createElement('button');
-        btn.textContent = tag;
-        btn.onclick = () => {
-          if (selectedTags.has(tag)) {
-            selectedTags.delete(tag);
-            btn.classList.remove('active');
-          } else {
-            selectedTags.add(tag);
-            btn.classList.add('active');
-          }
-          filterCardsByTags();
-        };
-        container.appendChild(btn);
-      });
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    let currentUser = null;
+
+    document.getElementById('loginBtn').onclick = () => {
+      if (currentUser) {
+        auth.signOut();
+      } else {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider);
+      }
+    };
+
+    auth.onAuthStateChanged(user => {
+      currentUser = user;
+      const userInfo = document.getElementById('userInfo');
+      document.getElementById('loginBtn').textContent = user ? '🚪 Logout' : '🔐 Login';
+      userInfo.textContent = user ? `Olá, ${user.displayName}` : '';
+    });
+
+    function switchView(view) {
+      document.getElementById('homeView').classList.remove('active');
+      document.getElementById('databaseView').classList.remove('active');
+      document.getElementById(view + 'View').classList.add('active');
     }
 
-    function filterCardsByTags() {
-      const cards = document.querySelectorAll('.card');
-      if (selectedTags.size === 0) {
-        cards.forEach(card => card.style.display = 'block');
-        return;
-      }
-      cards.forEach(card => {
-        const cardTags = (card.dataset.tags || '').split(',').map(t => t.trim());
-        const show = [...selectedTags].some(tag => cardTags.includes(tag));
-        card.style.display = show ? 'block' : 'none';
+    function addRow(jogo = {nome: '', link: '', descricao: '', tags: '', id: ''}) {
+      const tbody = document.getElementById('gameTable');
+      const row = document.createElement('tr');
+
+      const fields = ['nome', 'link', 'descricao', 'tags'];
+      fields.forEach(field => {
+        const td = document.createElement('td');
+        const input = document.createElement('input');
+        input.value = jogo[field] || '';
+        input.dataset.field = field;
+        td.appendChild(input);
+        row.appendChild(td);
       });
+
+      const actionsTd = document.createElement('td');
+      if (jogo.id && jogo.uid === (currentUser && currentUser.uid)) {
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '🗑️';
+        delBtn.onclick = () => deleteGame(jogo.id);
+        actionsTd.appendChild(delBtn);
+      }
+      row.dataset.id = jogo.id || '';
+      tbody.appendChild(row);
+      row.appendChild(actionsTd);
     }
 
     function renderCard(jogo) {
       const home = document.getElementById('homeView');
       const card = document.createElement('div');
       card.className = 'card';
-      card.dataset.tags = jogo.tags || '';
-
       const title = document.createElement('h2');
       title.textContent = jogo.nome;
-
-      const creator = document.createElement('div');
-      creator.className = 'creator';
-      creator.textContent = `Created by ${jogo.author || 'Unknown'}`;
-
       const desc = document.createElement('p');
       desc.textContent = jogo.descricao;
-
       const tag = document.createElement('div');
       tag.className = 'tag';
       tag.textContent = jogo.tags;
-
-      const btnRow = document.createElement('div');
-      btnRow.className = 'btn-row';
       const btn = document.createElement('a');
       btn.href = jogo.link;
       btn.textContent = "Jogar";
-      btnRow.appendChild(btn);
-
       card.appendChild(title);
-      card.appendChild(creator);
       card.appendChild(desc);
       card.appendChild(tag);
-      card.appendChild(btnRow);
-
+      card.appendChild(btn);
       home.appendChild(card);
     }
+
+    function loadFromFirebase(orderBy = 'nome') {
+      db.collection("jogos").orderBy(orderBy).get().then(snapshot => {
+        document.getElementById('gameTable').innerHTML = '';
+        document.getElementById('homeView').innerHTML = '';
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          data.id = doc.id;
+          addRow(data);
+          renderCard(data);
+        });
+      });
+    }
+
+    function saveToFirebase() {
+      if (!currentUser) {
+        alert('Por favor, faça login primeiro.');
+        return;
+      }
+      const rows = document.querySelectorAll('#gameTable tr');
+      rows.forEach(row => {
+        const id = row.dataset.id;
+        const inputs = row.querySelectorAll('input');
+        const data = {};
+        inputs.forEach(input => data[input.dataset.field] = input.value);
+        data.uid = currentUser.uid;
+        data.author = currentUser.displayName;
+        if (data.nome && data.link) {
+          if (id) {
+            db.collection("jogos").doc(id).set(data);
+          } else {
+            db.collection("jogos").add(data).then(() => loadFromFirebase());
+          }
+        }
+      });
+    }
+
+    function deleteGame(id) {
+      if (confirm('Tem certeza que deseja excluir este jogo?')) {
+        db.collection("jogos").doc(id).delete().then(() => loadFromFirebase());
+      }
+    }
+
+    function sortGames(criteria) {
+      loadFromFirebase(criteria);
+    }
+
+    window.onload = () => loadFromFirebase();
   </script>
 </body>
 </html>
