@@ -37,7 +37,7 @@
       box-shadow: 0 2px 12px rgba(0,0,0,0.1);
     }
     #gameTable th { display: none; }
-    #gameTable td { border: none; padding: 0.5rem; }
+    #gameTable td { border: none; padding: 0.5rem; vertical-align: top; }
     #gameTable input[type="text"], 
     #gameTable input[type="file"] {
       width: 100%;
@@ -50,6 +50,16 @@
     #gameTable input[type="file"] { background: #f7f7f7; }
     #gameTable tr { background: #f9f9f9; border-radius: 8px; }
     #gameTable tr td:last-child { text-align: center; }
+    #gameTable button {
+      font-size: 0.85rem;
+      background: #4a90e2;
+      color: white;
+      border: none;
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 0.4rem;
+    }
     .btn-bar { margin: 1rem 2rem; }
     .btn-bar button, .btn-bar select { margin-right: 1rem; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; }
     #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 1rem 2rem; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.5s ease-in-out; z-index: 2000; }
@@ -161,7 +171,14 @@
     const uploadCell = row.insertCell();
     const uploadInput = document.createElement('input');
     uploadInput.type = 'file';
+
+    const uploadBtn = document.createElement('button');
+    uploadBtn.textContent = '⬆️ Upload';
+    uploadBtn.style.marginTop = '0.5rem';
+    uploadBtn.onclick = () => uploadFile(row);
+
     uploadCell.appendChild(uploadInput);
+    uploadCell.appendChild(uploadBtn);
 
     const actionsCell = row.insertCell();
     const delBtn = document.createElement('button');
@@ -170,6 +187,32 @@
       if (confirm('Deseja excluir esta linha?')) row.remove();
     };
     actionsCell.appendChild(delBtn);
+  }
+
+  function uploadFile(row) {
+    const fileInput = row.querySelector('input[type="file"]');
+    const urlInput = row.cells[1].querySelector('input[type="text"]');
+
+    if (!fileInput || fileInput.files.length === 0) {
+      alert('Selecione um arquivo primeiro.');
+      return;
+    }
+
+    const file = fileInput.files[0];
+    const storageRef = storage.ref('uploads/' + file.name);
+
+    showToast('⏳ Enviando arquivo...');
+
+    storageRef.put(file)
+      .then(snapshot => snapshot.ref.getDownloadURL())
+      .then(url => {
+        urlInput.value = url;
+        showToast('✅ Upload concluído!');
+      })
+      .catch(err => {
+        console.error('Erro no upload:', err);
+        showToast('❌ Falha no upload!');
+      });
   }
 
   function saveToFirebase() {
