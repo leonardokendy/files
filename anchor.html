@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>S.T.A.G.E - Spring Platform</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f5faff; margin: 0; padding: 0 0 60px 0; }
+    body { font-family: Arial, sans-serif; background: #f5faff; margin: 0; padding-bottom: 60px; }
     header { background: #4a90e2; color: white; padding: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; }
     .header-left { display: flex; align-items: center; gap: 1rem; }
     header img { height: 50px; }
@@ -26,22 +26,28 @@
     footer button { background: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
     #homeView, #databaseView { display: none; }
     #homeView.active, #databaseView.active { display: block; }
-    table { width: 100%; border-collapse: collapse; margin: 2rem; }
-    th, td { padding: 0.75rem; border: 1px solid #ccc; text-align: left; }
-    .btn-bar { margin: 1rem 2rem; }
-    .btn-bar button, .btn-bar select { margin-right: 1rem; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; }
+    table { width: 95%; margin: 2rem auto; border-collapse: collapse; table-layout: fixed; }
+    th, td { padding: 0.6rem; border: 1px solid #ccc; text-align: left; }
+    th:nth-child(1), td:nth-child(1) { width: 16%; }
+    th:nth-child(2), td:nth-child(2) { width: 18%; }
+    th:nth-child(3), td:nth-child(3) { width: 24%; }
+    th:nth-child(4), td:nth-child(4) { width: 15%; }
+    th:nth-child(5), td:nth-child(5) { width: 10%; }
+    th:nth-child(6), td:nth-child(6) { width: 7%; }
+    th:nth-child(7), td:nth-child(7) { width: 10%; text-align: center; }
+    .btn-bar { margin: 1rem 2rem; text-align: center; }
+    .btn-bar button, .btn-bar select { margin: 0.5rem; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; }
     #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 1rem 2rem; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.5s ease-in-out; z-index: 2000; }
-    #toast.show { display: block; opacity: 1; }
+    #toast.show { opacity: 1; }
   </style>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 </head>
 <body>
 <header>
   <div class="header-left">
-    <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" alt="Spring School Logo"/>
+    <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" alt="Logo"/>
     <div class="header-title">
       <h1>S.T.A.G.E</h1>
       <div class="subtitle">Spring Platform for Resources, Ideas, Notes and Tools</div>
@@ -49,10 +55,12 @@
   </div>
   <button class="login-btn" onclick="handleLogin()">Login</button>
 </header>
+
 <main id="homeView" class="active">
   <div id="tagFilters"></div>
   <div class="grid" id="homeGrid"></div>
 </main>
+
 <main id="databaseView">
   <div class="btn-bar">
     <button onclick="addRow()">➕ Add Game</button>
@@ -75,12 +83,16 @@
     </tr>
   </table>
 </main>
+
 <footer>
   <button onclick="switchView('home')">🏠 Home</button>
   <button onclick="switchView('database')">📁 Banco de Dados</button>
 </footer>
+
 <div id="toast">💾 Jogos salvos com sucesso!</div>
+
 <script>
+document.addEventListener('DOMContentLoaded', () => {
   const firebaseConfig = {
     apiKey: "AIzaSyD2trlGj_o_0ZXnJekL6NlZP7rS-bZdWVY",
     authDomain: "sprint-byleo.firebaseapp.com",
@@ -92,45 +104,81 @@
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
-  const storage = firebase.storage();
   let allGames = [];
   let selectedTags = [];
 
-  function handleLogin() {
+  window.handleLogin = function () {
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider)
       .then(result => {
         document.querySelector('.login-btn').textContent = result.user.displayName;
         document.querySelector('.login-btn').disabled = true;
-        loadFromFirebase();
+        window.loadFromFirebase();
       })
-      .catch(error => {
-        console.error('Erro no login:', error);
-      });
-  }
+      .catch(error => console.error('Erro no login:', error));
+  };
 
-  function switchView(view) {
+  window.switchView = function(view) {
     document.getElementById('homeView').classList.remove('active');
     document.getElementById('databaseView').classList.remove('active');
-    if (view === 'home') document.getElementById('homeView').classList.add('active');
-    else document.getElementById('databaseView').classList.add('active');
+    document.getElementById(view + 'View').classList.add('active');
+  };
+
+  window.addRow = function () {
+    renderRow({ nome: '', link: '', descricao: '', tags: '', tipo: '' });
+  };
+
+  window.saveToFirebase = function () {
+    const rows = document.querySelectorAll('#gameTable tr');
+    const batch = db.batch();
+    rows.forEach((row, index) => {
+      if (index === 0) return;
+      const inputs = row.querySelectorAll('input[type=text]');
+      const data = {
+        nome: inputs[0].value,
+        link: inputs[1].value,
+        descricao: inputs[2].value,
+        tags: inputs[3].value,
+        tipo: inputs[4].value
+      };
+      const ref = db.collection('games').doc();
+      batch.set(ref, data);
+    });
+    batch.commit().then(() => showToast('💾 Jogos salvos com sucesso!'));
+  };
+
+  window.loadFromFirebase = function () {
+    db.collection('games').get().then(snapshot => {
+      allGames = snapshot.docs.map(doc => doc.data());
+      renderAll();
+    });
+  };
+
+  function renderAll() {
+    document.getElementById('homeGrid').innerHTML = '';
+    document.getElementById('gameTable').innerHTML = document.querySelector('#gameTable').rows[0].outerHTML;
+    allGames.forEach(g => {
+      renderCard(g);
+      renderRow(g);
+    });
+    renderTagFilters();
   }
 
-  function showToast(msg) {
-    const toast = document.getElementById('toast');
-    toast.textContent = msg;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
+  function renderCard(g) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `<h2>${g.nome}</h2><p>${g.descricao}</p><div class="tag">${g.tags}</div><a href="${g.link}" target="_blank">Jogar</a>`;
+    document.getElementById('homeGrid').appendChild(card);
   }
 
-  function addRow() {
+  function renderRow(g) {
     const table = document.getElementById('gameTable');
     const row = table.insertRow();
-    const fields = ['nome', 'link', 'descricao', 'tags', 'tipo'];
-    fields.forEach(() => {
+    ['nome','link','descricao','tags','tipo'].forEach(k => {
       const cell = row.insertCell();
       const input = document.createElement('input');
       input.type = 'text';
+      input.value = g[k] || '';
       cell.appendChild(input);
     });
     const uploadCell = row.insertCell();
@@ -144,25 +192,49 @@
     actionsCell.appendChild(delBtn);
   }
 
-  function saveToFirebase() {
-    const table = document.getElementById('gameTable');
-    const rows = Array.from(table.rows).slice(1);
-    const batch = db.batch();
-    rows.forEach(row => {
-      const inputs = row.querySelectorAll('input');
-      const docRef = db.collection('games').doc();
-      const data = {
-        nome: inputs[0].value,
-        link: inputs[1].value,
-        descricao: inputs[2].value,
-        tags: inputs[3].value,
-        tipo: inputs[4].value
-      };
-      batch.set(docRef, data);
+  function renderTagFilters() {
+    const set = new Set();
+    allGames.forEach(g => g.tags?.split(',').forEach(t => set.add(t.trim())));
+    const container = document.getElementById('tagFilters');
+    container.innerHTML = '';
+    [...set].sort().forEach(tag => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-tag';
+      btn.textContent = tag;
+      btn.onclick = () => toggleTag(btn, tag);
+      container.appendChild(btn);
     });
-    batch.commit().then(() => showToast('💾 Jogos salvos com sucesso!'));
   }
+
+  function toggleTag(btn, tag) {
+    btn.classList.toggle('active');
+    selectedTags.includes(tag)
+      ? selectedTags.splice(selectedTags.indexOf(tag), 1)
+      : selectedTags.push(tag);
+    filterCards();
+  }
+
+  function filterCards() {
+    const filtered = selectedTags.length === 0
+      ? allGames
+      : allGames.filter(g => selectedTags.some(tag => g.tags?.includes(tag)));
+    document.getElementById('homeGrid').innerHTML = '';
+    filtered.forEach(renderCard);
+  }
+
+  window.sortGames = function (key) {
+    if (!key) return;
+    allGames.sort((a, b) => (a[key] || '').localeCompare(b[key] || ''));
+    renderAll();
+  };
+
+  window.showToast = function (msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  };
+});
 </script>
 </body>
 </html>
-
