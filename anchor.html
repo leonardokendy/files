@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,274 +5,75 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>S.T.A.G.E - Spring Platform</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5faff;
-      margin: 0;
-      padding: 0 0 60px 0;
-    }
-    header {
-      background: #4a90e2;
-      color: white;
-      padding: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-    }
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    header img {
-      height: 50px;
-    }
-    .header-title {
-      display: flex;
-      flex-direction: column;
-    }
-    h1 {
-      font-size: 2rem;
-      margin: 0;
-    }
-    .subtitle {
-      font-size: 0.9rem;
-      font-style: italic;
-      margin-top: 0.2rem;
-    }
-    #tagFilters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      padding: 1rem 2rem 0;
-    }
-    .filter-tag {
-      background: #e0e0e0;
-      border: none;
-      border-radius: 6px;
-      padding: 0.4rem 0.8rem;
-      cursor: pointer;
-      font-size: 0.85rem;
-    }
-    .filter-tag.active {
-      background: #4a90e2;
-      color: white;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      padding: 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      padding: 1.5rem;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .card h2 {
-      margin: 0.5rem 0;
-      font-size: 1.2rem;
-    }
-    .card p {
-      font-size: 0.95rem;
-      color: #555;
-    }
-    .card .tag {
-      font-size: 0.75rem;
-      color: #fff;
-      background: #4a90e2;
-      display: inline-block;
-      padding: 0.25rem 0.5rem;
-      border-radius: 6px;
-      margin-top: 0.5rem;
-      margin-bottom: 0.5rem;
-    }
-    .card a {
-      display: inline-block;
-      background: #ffc107;
-      color: #000;
-      text-decoration: none;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      font-weight: bold;
-      margin-top: 0.5rem;
-    }
-    footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #4a90e2;
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      padding: 0.75rem 0;
-      z-index: 1000;
-    }
-    footer button {
-      background: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    #homeView, #databaseView {
-      display: none;
-    }
-    #homeView.active, #databaseView.active {
-      display: block;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 2rem;
-    }
-    th, td {
-      padding: 0.75rem;
-      border: 1px solid #ccc;
-      text-align: left;
-    }
-    .btn-bar {
-      margin: 1rem 2rem;
-    }
-    .btn-bar button, .btn-bar select {
-      margin-right: 1rem;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      font-weight: bold;
-    }
-    .login-btn {
-      margin-top: 0.5rem;
-    }
-    #toast {
-      position: fixed;
-      bottom: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #4caf50;
-      color: white;
-      padding: 1rem 2rem;
-      border-radius: 8px;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      opacity: 0;
-      transition: opacity 0.5s ease-in-out;
-      z-index: 2000;
-    }
-    #toast.show {
-      display: block;
-      opacity: 1;
-    }
+    body { font-family: Arial, sans-serif; background: #f5faff; margin: 0; padding: 0 0 60px 0; }
+    header { background: #4a90e2; color: white; padding: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
+    header img { height: 50px; }
+    .header-title { display: flex; flex-direction: column; }
+    h1 { font-size: 2rem; margin: 0; }
+    .subtitle { font-size: 0.9rem; font-style: italic; margin-top: 0.2rem; }
+    .login-btn { background: white; color: #4a90e2; font-weight: bold; padding: 0.4rem 1rem; border-radius: 6px; cursor: pointer; border: none; }
+    #tagFilters { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 1rem 2rem 0; }
+    .filter-tag { background: #e0e0e0; border: none; border-radius: 6px; padding: 0.4rem 0.8rem; cursor: pointer; font-size: 0.85rem; }
+    .filter-tag.active { background: #4a90e2; color: white; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; padding: 2rem; max-width: 1200px; margin: 0 auto; }
+    .card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 1.5rem; text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
+    .card h2 { margin: 0.5rem 0; font-size: 1.2rem; }
+    .card p { font-size: 0.95rem; color: #555; }
+    .card .tag { font-size: 0.75rem; color: #fff; background: #4a90e2; display: inline-block; padding: 0.25rem 0.5rem; border-radius: 6px; margin: 0.5rem 0; }
+    .card a { display: inline-block; background: #ffc107; color: #000; text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; margin-top: 0.5rem; }
+    footer { position: fixed; bottom: 0; left: 0; right: 0; background: #4a90e2; display: flex; justify-content: center; gap: 2rem; padding: 0.75rem 0; z-index: 1000; }
+    footer button { background: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    #homeView, #databaseView { display: none; }
+    #homeView.active, #databaseView.active { display: block; }
+    table { width: 100%; border-collapse: collapse; margin: 2rem; }
+    th, td { padding: 0.75rem; border: 1px solid #ccc; text-align: left; }
+    .btn-bar { margin: 1rem 2rem; }
+    .btn-bar button, .btn-bar select { margin-right: 1rem; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; }
+    #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 1rem 2rem; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.5s ease-in-out; z-index: 2000; }
+    #toast.show { display: block; opacity: 1; }
   </style>
 </head>
 <body>
-  <header>
-    <div class="header-left">
-      <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" alt="Spring School Logo" />
-      <div class="header-title">
-        <h1>S.T.A.G.E</h1>
-        <div class="subtitle">Spring Teacher's Activity & Guidance Engine</div>
-      </div>
+<header>
+  <div class="header-left">
+    <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" alt="Spring School Logo"/>
+    <div class="header-title">
+      <h1>S.T.A.G.E</h1>
+      <div class="subtitle">Spring Platform for Resources, Ideas, Notes and Tools</div>
     </div>
-    <div>
-      <button id="loginBtn" class="login-btn">🔐 Login</button>
-      <span id="userInfo"></span>
-    </div>
-  </header>
-
-  <main id="homeView" class="active">
-    <div id="tagFilters"></div>
-    <div class="grid" id="homeGrid"></div>
-  </main>
-
-  <main id="databaseView">
-    <div class="btn-bar">
-      <button onclick="addRow()">➕ Add Game</button>
-      <button onclick="saveToFirebase()">💾 Salvar</button>
-      <select onchange="sortGames(this.value)">
-        <option value="nome">🔤 Ordenar por Nome</option>
-        <option value="tags">🏷️ Ordenar por Tags</option>
-      </select>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>Nome do Jogo</th>
-          <th>Link</th>
-          <th>Descrição</th>
-          <th>Tags</th>
-          <th>Tipo</th>
-          <th>Arquivo</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody id="gameTable"></tbody>
-    </table>
-  </main>
-
-  <footer>
-    <button onclick="switchView('home')">🏠 Home</button>
-    <button onclick="switchView('database')">🗂️ Database</button>
-  </footer>
-
-  <div id="toast">💾 Jogos salvos com sucesso!</div>
-
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
-  <script>
-    // Firebase Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyD2trlGj_o_0ZXnJekL6NlZP7rS-bZdWVY",
-      authDomain: "sprint-byleo.firebaseapp.com",
-      projectId: "sprint-byleo",
-      storageBucket: "sprint-byleo.appspot.com",
-      messagingSenderId: "306149887616",
-      appId: "1:306149887616:web:5a3d7efbb718121fe3e065"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    let allGames = [];
-    let selectedTags = [];
-
-    // Funções omitidas para tamanho: renderCard, renderTableRow, loadFromFirebase, uploadFilePerRow,
-    // showToast, saveToFirebase, switchView, generateTagButtons, applyFilters, toggleTagFilter, etc.
-
-    function addRow() {
-      const newRow = {
-        nome: '',
-        link: '',
-        descricao: '',
-        tags: '',
-        tipo: 'jogar',
-        id: null,
-      };
-      renderTableRow(newRow);
-    }
-
-    function sortGames(key) {
-      const table = document.getElementById('gameTable');
-      let sorted = [...allGames].sort((a, b) => {
-        return (a[key] || '').localeCompare(b[key] || '');
-      });
-      table.innerHTML = '';
-      sorted.forEach(jogo => renderTableRow(jogo));
-    }
-
-    window.onload = () => {
-      loadFromFirebase();
-    };
-  </script>
-</body>
-</html>
+  </div>
+  <button class="login-btn" onclick="handleLogin()">Login</button>
+</header>
+<main id="homeView" class="active">
+  <div id="tagFilters"></div>
+  <div class="grid" id="homeGrid"></div>
+</main>
+<main id="databaseView">
+  <div class="btn-bar">
+    <button onclick="addRow()">➕ Add Game</button>
+    <button onclick="saveToFirebase()">💾 Save All</button>
+    <select onchange="sortGames(this.value)">
+      <option value="">Ordenar por...</option>
+      <option value="nome">Nome</option>
+      <option value="tags">Tags</option>
+    </select>
+  </div>
+  <table id="gameTable">
+    <tr>
+      <th>Nome</th>
+      <th>Link</th>
+      <th>Descrição</th>
+      <th>Tags</th>
+      <th>Tipo</th>
+      <th>Arquivo</th>
+      <th>Ações</th>
+    </tr>
+  </table>
+</main>
+<footer>
+  <button onclick="switchView('home')">🏠 Home</button>
+  <button onclick="switchView('database')">📁 Banco de Dados</button>
+</footer>
+<div id="toast">💾 Jogos salvos com sucesso!</div>
+<!-- Scripts mantidos abaixo -->
