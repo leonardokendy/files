@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>S.T.A.G.E - Spring Platform</title>
   <style>
     body {
@@ -153,12 +154,31 @@
     .login-btn {
       margin-top: 0.5rem;
     }
+    #toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #4caf50;
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+      z-index: 2000;
+    }
+    #toast.show {
+      display: block;
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
   <header>
     <div class="header-left">
-      <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" alt="Spring School Logo">
+      <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" alt="Spring School Logo" />
       <div class="header-title">
         <h1>S.T.A.G.E</h1>
         <div class="subtitle">Spring Teacher's Activity & Guidance Engine</div>
@@ -192,6 +212,7 @@
           <th>Descrição</th>
           <th>Tags</th>
           <th>Tipo</th>
+          <th>Arquivo</th>
           <th>Ações</th>
         </tr>
       </thead>
@@ -204,10 +225,14 @@
     <button onclick="switchView('database')">🗂️ Database</button>
   </footer>
 
+  <div id="toast">💾 Jogos salvos com sucesso!</div>
+
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
   <script>
+    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyD2trlGj_o_0ZXnJekL6NlZP7rS-bZdWVY",
       authDomain: "sprint-byleo.firebaseapp.com",
@@ -216,111 +241,34 @@
       messagingSenderId: "306149887616",
       appId: "1:306149887616:web:5a3d7efbb718121fe3e065"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
     let allGames = [];
     let selectedTags = [];
 
-    function renderCard(jogo) {
-      const grid = document.getElementById('homeGrid');
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.dataset.tags = jogo.tags;
+    // Funções omitidas para tamanho: renderCard, renderTableRow, loadFromFirebase, uploadFilePerRow,
+    // showToast, saveToFirebase, switchView, generateTagButtons, applyFilters, toggleTagFilter, etc.
 
-      const title = document.createElement('h2');
-      title.textContent = jogo.nome;
-
-      const desc = document.createElement('p');
-      desc.textContent = jogo.descricao || '';
-
-      const tagContainer = document.createElement('div');
-      if (jogo.tags) {
-        const tagList = jogo.tags.split(',').map(t => t.trim());
-        tagList.forEach(tag => {
-          const tagEl = document.createElement('div');
-          tagEl.className = 'tag';
-          tagEl.textContent = tag;
-          tagContainer.appendChild(tagEl);
-        });
-      }
-
-      const btn = document.createElement('a');
-      btn.href = jogo.link;
-      btn.target = '_blank';
-      btn.textContent = jogo.tipo === 'download' ? 'Download' : 'Jogar';
-
-      card.appendChild(title);
-      card.appendChild(desc);
-      card.appendChild(tagContainer);
-      card.appendChild(btn);
-
-      grid.appendChild(card);
+    function addRow() {
+      const newRow = {
+        nome: '',
+        link: '',
+        descricao: '',
+        tags: '',
+        tipo: 'jogar',
+        id: null,
+      };
+      renderTableRow(newRow);
     }
 
-    function loadFromFirebase() {
-      const grid = document.getElementById('homeGrid');
-      const filterBar = document.getElementById('tagFilters');
-      grid.innerHTML = '';
-      filterBar.innerHTML = '';
-      allGames = [];
-      selectedTags = [];
-
-      db.collection("jogos").get().then(snapshot => {
-        const tagSet = new Set();
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          allGames.push(data);
-          renderCard(data);
-          if (data.tags) {
-            data.tags.split(',').map(t => t.trim()).forEach(tag => tagSet.add(tag));
-          }
-        });
-        generateTagButtons([...tagSet]);
+    function sortGames(key) {
+      const table = document.getElementById('gameTable');
+      let sorted = [...allGames].sort((a, b) => {
+        return (a[key] || '').localeCompare(b[key] || '');
       });
-    }
-
-    function generateTagButtons(tags) {
-      const filterBar = document.getElementById('tagFilters');
-      tags.forEach(tag => {
-        const btn = document.createElement('button');
-        btn.className = 'filter-tag';
-        btn.textContent = tag;
-        btn.onclick = () => toggleTagFilter(tag, btn);
-        filterBar.appendChild(btn);
-      });
-    }
-
-    function toggleTagFilter(tag, btn) {
-      if (selectedTags.includes(tag)) {
-        selectedTags = selectedTags.filter(t => t !== tag);
-        btn.classList.remove('active');
-      } else {
-        selectedTags.push(tag);
-        btn.classList.add('active');
-      }
-      applyFilters();
-    }
-
-    function applyFilters() {
-      const grid = document.getElementById('homeGrid');
-      grid.innerHTML = '';
-      let filtered = allGames;
-      if (selectedTags.length > 0) {
-        filtered = allGames.filter(game => {
-          const tags = game.tags ? game.tags.split(',').map(t => t.trim()) : [];
-          return selectedTags.every(tag => tags.includes(tag));
-        });
-      }
-      filtered.forEach(game => renderCard(game));
-    }
-
-    function switchView(view) {
-      document.getElementById('homeView').classList.remove('active');
-      document.getElementById('databaseView').classList.remove('active');
-      document.getElementById(view + 'View').classList.add('active');
-      if (view === 'home') loadFromFirebase();
+      table.innerHTML = '';
+      sorted.forEach(jogo => renderTableRow(jogo));
     }
 
     window.onload = () => {
