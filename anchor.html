@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>S.T.A.G.E - Spring Platform</title>
+  <title>S.T.A.G.E</title>
   <style>
     body { font-family: Arial, sans-serif; background: #f5faff; margin: 0; padding: 0 0 60px 0; }
     header { background: #4a90e2; color: white; padding: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; }
@@ -166,27 +166,39 @@
     const actionsCell = row.insertCell();
     const delBtn = document.createElement('button');
     delBtn.textContent = '🗑️';
-    delBtn.onclick = () => row.remove();
+    delBtn.onclick = () => {
+      if (confirm('Deseja excluir esta linha?')) row.remove();
+    };
     actionsCell.appendChild(delBtn);
   }
 
   function saveToFirebase() {
     const table = document.getElementById('gameTable');
     const rows = Array.from(table.rows).slice(1);
+    let hasValid = false;
 
     rows.forEach(row => {
       const inputs = row.querySelectorAll('input[type="text"]');
       const fileInput = row.querySelector('input[type="file"]');
       const data = {
-        nome: inputs[0].value,
-        link: inputs[1].value,
-        descricao: inputs[2].value,
-        tags: inputs[3].value,
-        tipo: inputs[4].value
+        nome: inputs[0].value.trim(),
+        link: inputs[1].value.trim(),
+        descricao: inputs[2].value.trim(),
+        tags: inputs[3].value.trim(),
+        tipo: inputs[4].value.trim()
       };
 
+      const hasFile = fileInput && fileInput.files.length > 0;
+
+      if (!data.nome || (!data.link && !hasFile)) {
+        console.warn('⚠️ Campos obrigatórios ausentes:', data.nome);
+        return;
+      }
+
+      hasValid = true;
       const docRef = db.collection('games').doc();
-      if (fileInput && fileInput.files.length > 0) {
+
+      if (hasFile) {
         const file = fileInput.files[0];
         const storageRef = storage.ref('uploads/' + file.name);
         storageRef.put(file).then(snapshot => {
@@ -200,7 +212,8 @@
       }
     });
 
-    showToast('💾 Jogos salvos com sucesso!');
+    if (hasValid) showToast('💾 Jogos salvos com sucesso!');
+    else showToast('⚠️ Preencha nome e link ou envie um arquivo!');
   }
 
   function renderCard(g) {
@@ -225,13 +238,48 @@
     document.getElementById('homeGrid').appendChild(card);
   }
 
+  function renderTagFilters() {
+    const container = document.getElementById('tagFilters');
+    container.innerHTML = '';
+    const tags = [...new Set(allGames.flatMap(g => g.tags.split(',').map(t => t.trim().toLowerCase())))];
+    tags.forEach(tag => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-tag';
+      btn.textContent = tag;
+      btn.onclick = () => toggleTag(tag, btn);
+      container.appendChild(btn);
+    });
+  }
+
+  function toggleTag(tag, button) {
+    button.classList.toggle('active');
+    if (selectedTags.includes(tag)) {
+      selectedTags = selectedTags.filter(t => t !== tag);
+    } else {
+      selectedTags.push(tag);
+    }
+    filterCards();
+  }
+
+  function filterCards() {
+    const filtered = selectedTags.length === 0
+      ? allGames
+      : allGames.filter(g =>
+          selectedTags.every(tag => g.tags.toLowerCase().includes(tag))
+        );
+    document.getElementById('homeGrid').innerHTML = '';
+    filtered.forEach(renderCard);
+  }
+
   function loadFromFirebase() {
     db.collection("games").get().then(snapshot => {
       allGames = snapshot.docs.map(doc => doc.data());
       document.getElementById('homeGrid').innerHTML = '';
       allGames.forEach(renderCard);
+      renderTagFilters();
     });
   }
 </script>
+
 </body>
 </html>
