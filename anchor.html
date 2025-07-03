@@ -105,6 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
+  let allGames = [];
+  let selectedTags = [];
 
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
@@ -155,26 +157,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     batch.commit().then(() => {
       showToast('💾 Jogos salvos com sucesso!');
-      loadFromFirebase(); // ✅ RELOAD após salvar
+      loadFromFirebase();
     });
   };
 
   window.loadFromFirebase = function () {
     db.collection('games').get().then(snapshot => {
-      allGames = snapshot.docs.map(doc => doc.data());
-      renderAll();
+      allGames = [];
+      selectedTags = [];
+      document.getElementById('homeGrid').innerHTML = '';
+      document.getElementById('tagFilters').innerHTML = '';
+      document.getElementById('gameTable').innerHTML = `
+        <tr>
+          <th>Nome</th>
+          <th>Link</th>
+          <th>Descrição</th>
+          <th>Tags</th>
+          <th>Tipo</th>
+          <th>Arquivo</th>
+          <th>Ações</th>
+        </tr>`;
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        allGames.push(data);
+        renderCard(data);
+        renderRow(data);
+      });
+      renderTagFilters();
     });
   };
-
-  function renderAll() {
-    document.getElementById('homeGrid').innerHTML = '';
-    document.getElementById('gameTable').innerHTML = document.querySelector('#gameTable').rows[0].outerHTML;
-    allGames.forEach(g => {
-      renderCard(g);
-      renderRow(g);
-    });
-    renderTagFilters();
-  }
 
   function renderCard(g) {
     const card = document.createElement('div');
@@ -238,15 +249,32 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAll();
   };
 
+  function renderAll() {
+    document.getElementById('homeGrid').innerHTML = '';
+    document.getElementById('tagFilters').innerHTML = '';
+    document.getElementById('gameTable').innerHTML = `
+      <tr>
+        <th>Nome</th>
+        <th>Link</th>
+        <th>Descrição</th>
+        <th>Tags</th>
+        <th>Tipo</th>
+        <th>Arquivo</th>
+        <th>Ações</th>
+      </tr>`;
+    allGames.forEach(g => {
+      renderCard(g);
+      renderRow(g);
+    });
+    renderTagFilters();
+  }
+
   window.showToast = function (msg) {
     const toast = document.getElementById('toast');
     toast.textContent = msg;
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 3000);
   };
-
-  let allGames = [];
-  let selectedTags = [];
 });
 </script>
 </body>
