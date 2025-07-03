@@ -101,11 +101,20 @@ document.addEventListener('DOMContentLoaded', () => {
     messagingSenderId: "306149887616",
     appId: "1:306149887616:web:5a3d7efbb718121fe3e065"
   };
+
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
-  let allGames = [];
-  let selectedTags = [];
+
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      document.querySelector('.login-btn').textContent = user.displayName;
+      document.querySelector('.login-btn').disabled = true;
+      loadFromFirebase();
+    }
+  });
 
   window.handleLogin = function () {
     const provider = new firebase.auth.GoogleAuthProvider();
@@ -113,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(result => {
         document.querySelector('.login-btn').textContent = result.user.displayName;
         document.querySelector('.login-btn').disabled = true;
-        window.loadFromFirebase();
+        loadFromFirebase();
       })
       .catch(error => console.error('Erro no login:', error));
   };
@@ -144,7 +153,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const ref = db.collection('games').doc();
       batch.set(ref, data);
     });
-    batch.commit().then(() => showToast('💾 Jogos salvos com sucesso!'));
+    batch.commit().then(() => {
+      showToast('💾 Jogos salvos com sucesso!');
+      loadFromFirebase(); // ✅ RELOAD após salvar
+    });
   };
 
   window.loadFromFirebase = function () {
@@ -182,9 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
       cell.appendChild(input);
     });
     const uploadCell = row.insertCell();
-    const uploadInput = document.createElement('input');
-    uploadInput.type = 'file';
-    uploadCell.appendChild(uploadInput);
+    uploadCell.appendChild(document.createElement('input')).type = 'file';
     const actionsCell = row.insertCell();
     const delBtn = document.createElement('button');
     delBtn.textContent = '🗑️';
@@ -234,6 +244,9 @@ document.addEventListener('DOMContentLoaded', () => {
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 3000);
   };
+
+  let allGames = [];
+  let selectedTags = [];
 });
 </script>
 </body>
