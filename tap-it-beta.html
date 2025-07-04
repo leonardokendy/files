@@ -1,0 +1,344 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Spring Tapple Game</title>
+<style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      font-family: sans-serif;
+      background: #f2f2f2;
+      display: flex;
+      flex-direction: column;
+    }
+    #menu-screen, #end-screen {
+      position: fixed;
+      inset: 0;
+      background: #ffffffee;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+    #game-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 1vh;
+      box-sizing: border-box;
+    }
+    .letter-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      width: 90vw;
+      height: 60vh;
+      gap: 1vw;
+    }
+    .btn {
+      background-color: #4fc3f7;
+      color: white;
+      font-size: clamp(18px, 5vh, 6vw);
+      font-weight: bold;
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    .btn:disabled {
+      background-color: #ccc;
+      cursor: default;
+    }
+    #top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 90vw;
+      margin: 1vh 0;
+    }
+    #logo {
+      max-height: 8vh;
+      cursor: pointer;
+    }
+    #category {
+      font-size: clamp(16px, 3vh, 4vw);
+      background: #fff176;
+      padding: 0.5em 1em;
+      border-radius: 10px;
+    }
+    #counter {
+      font-size: clamp(20px, 5vh, 6vw);
+      color: red;
+    }
+    select, button {
+      font-size: 1.5rem;
+      padding: 0.5rem 1rem;
+      margin: 10px;
+      max-width: 90vw;
+    }
+    #letter-buttons {
+      display: grid;
+      grid-template-columns: repeat(13, 1fr);
+      gap: 0.5vw;
+      margin-bottom: 1em;
+      width: 90vw;
+    }
+    .select-letter {
+      font-size: clamp(14px, 2vh, 3vw);
+      padding: 0.6em;
+      background-color: #e0e0e0;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .select-letter.selected {
+      background-color: #4fc3f7;
+      color: white;
+    }
+    #end-screen h1 {
+      font-size: clamp(24px, 4vh, 4vw);
+      margin-bottom: 20px;
+    }
+  
+/* === Estilo em tons de azul com elementos planos === */
+button, .btn, .select-letter {
+  font-family: 'Arial Black', Gadget, sans-serif;
+  border-radius: 12px;
+  background: #42a5f5;
+  color: white;
+  border: 3px solid #1565c0;
+  box-shadow: 0 2px 0 #1565c0;
+  transition: background 0.2s, transform 0.1s ease;
+}
+
+button:hover, .btn:hover, .select-letter:hover {
+  background: #1e88e5;
+}
+
+button:active, .btn:active, .select-letter:active {
+  transform: scale(0.98);
+  box-shadow: none;
+}
+
+.btn:disabled {
+  background-color: #b0bec5;
+  color: #eceff1;
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+#counter {
+  background: #bbdefb;
+  color: #0d47a1;
+  font-weight: bold;
+  padding: 0.3em 0.7em;
+  border-radius: 10px;
+  font-size: 2.5rem;
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+}
+
+#top-bar {
+  background-color: #e3f2fd;
+  border-bottom: 3px solid #90caf9;
+  padding: 1vh 2vw;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 95vw;
+}
+
+#logo {
+  max-height: 6vh;
+}
+
+#category {
+  font-family: 'Arial Black', sans-serif;
+  color: #0d47a1;
+  background-color: transparent;
+  padding: 0.4em 0.8em;
+  font-size: 1.8rem;
+  border: none;
+  box-shadow: none;
+}
+
+#menu-screen {
+  background: #e3f2fd;
+  border: 3px solid #90caf9;
+  padding: 3vh 3vw;
+  border-radius: 20px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+#menu-screen label {
+  font-size: 1.3rem;
+  color: #0d47a1;
+}
+
+select {
+  background-color: #bbdefb;
+  color: #0d47a1;
+  border: 2px solid #64b5f6;
+  border-radius: 10px;
+}
+
+#letter-buttons {
+  background-color: #e3f2fd;
+  padding: 1vh;
+  border-radius: 12px;
+}
+
+</style>
+</head>
+<body>
+<div id="menu-screen"><img id="menu-logo" src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" style="max-height: 10vh; margin-bottom: 2vh;"/>
+
+<label>Category:
+      <select id="menu-category"><option value="Free">Free</option>
+<option value="Animals">Animals</option>
+<option value="Fruits">Fruits</option>
+<option value="Countries">Countries</option>
+<option value="Jobs">Jobs</option>
+<option value="Movies">Movies</option>
+<option value="Sports">Sports</option>
+</select>
+</label>
+<label>Timer:
+      <select id="menu-timer">
+<option value="10">10 sec</option>
+<option selected="" value="30">30 sec</option>
+<option value="60">60 sec</option>
+</select>
+</label>
+<label>Choose Letters:</label>
+<div id="letter-buttons"></div>
+<button class="btn" id="ok-button">OK</button>
+</div>
+<div id="end-screen" style="display:none;">
+<h1 id="end-message">🎉 Congratulations!</h1>
+<button onclick="location.reload()">Play Again</button>
+</div>
+<div id="game-container">
+<div id="top-bar">
+<img id="logo" src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" style="max-height: 10vh;"/>
+<div id="category">Animals</div>
+<div id="counter">0</div>
+</div>
+<div class="letter-grid" id="letter-grid"></div>
+</div>
+<script>
+    const menu = document.getElementById("menu-screen");
+    const okButton = document.getElementById("ok-button");
+    const categorySelect = document.getElementById("menu-category");
+    const timerSelect = document.getElementById("menu-timer");
+    const categoryDisplay = document.getElementById("category");
+    const counter = document.getElementById("counter");
+    const endScreen = document.getElementById("end-screen");
+    const endMessage = document.getElementById("end-message");
+    const letterGrid = document.getElementById("letter-grid");
+    const letterButtons = document.getElementById("letter-buttons");
+    const logo = document.getElementById("logo");
+
+    let timeLeft, currentTimer, usedCount = 0;
+    let timerValue;
+    let letters = [];
+
+    const basicSet = "A B C D E F G H I L M N O P R S T U W".split("");
+
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(letter => {
+      const btn = document.createElement("div");
+      btn.textContent = letter;
+      btn.className = "select-letter";
+      if (basicSet.includes(letter)) btn.classList.add("selected");
+      btn.onclick = () => btn.classList.toggle("selected");
+      letterButtons.appendChild(btn);
+    });
+
+    function resetTimer() {
+      clearInterval(currentTimer);
+      timeLeft = timerValue;
+      counter.textContent = timeLeft;
+      currentTimer = setInterval(() => {
+        timeLeft--;
+        counter.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(currentTimer);
+          showEnd("⏰ Time's up!");
+        }
+      }, 1000);
+    }
+
+    function createButtons() {
+      letterGrid.innerHTML = "";
+      const totalButtons = 25;
+      const selectedLetters = letters.slice(); // use global letters variable
+      const placeholders = totalButtons - selectedLetters.length;
+      const allSlots = [...selectedLetters, ...Array(placeholders).fill("")];
+      allSlots.forEach(letter => {
+        const btn = document.createElement("button");
+        btn.className = "btn";
+        if (letter) {
+          btn.textContent = letter;
+          btn.onclick = () => {
+            if (!btn.disabled) {
+              btn.disabled = true;
+              usedCount++;
+              resetTimer();
+              if (usedCount === letters.length) {
+                showEnd("🎉 Congratulations!");
+              }
+            }
+          };
+        } else {
+          btn.style.visibility = "hidden";
+        }
+        letterGrid.appendChild(btn);
+      });
+    }
+
+    function showEnd(message) {
+      endMessage.textContent = message;
+      endScreen.style.display = "flex";
+    }
+
+    okButton.onclick = () => {
+      document.documentElement.requestFullscreen?.();
+      menu.style.display = "none";
+      categoryDisplay.textContent = categorySelect.value;
+      timerValue = parseInt(timerSelect.value);
+
+      letters = Array.from(document.querySelectorAll(".select-letter.selected"))
+                    .map(el => el.textContent);
+      if (letters.length === 0) {
+        alert("Please select at least one letter.");
+        return;
+      }
+      if (letters.length > 25) letters = letters.slice(0, 25);
+
+      usedCount = 0;
+      resetTimer();
+      createButtons();
+    };
+
+    logo.onclick = () => location.reload();
+  </script>
+</body>
+</html>
