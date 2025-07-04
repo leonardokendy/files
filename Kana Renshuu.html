@@ -1,0 +1,413 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kana Game - Spring School</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f8ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    header {
+      text-align: center;
+      margin-top: 10px;
+    }
+    header img {
+      max-width: 80%;
+      height: auto;
+    }
+    h1 {
+      font-size: 32px;
+      color: #003366;
+      margin-bottom: 10px;
+    }
+    .menu, .game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      margin-top: 20px;
+      width: 90%;
+    }
+    select, button, input {
+      font-size: 24px;
+      padding: 10px;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 10px;
+      border: 2px solid #003366;
+      background-color: white;
+      color: #003366;
+      transition: all 0.3s ease;
+    }
+    button {
+      background-color: #003366;
+      color: white;
+      font-weight: bold;
+    }
+    #kanaSymbol {
+      font-size: 64px;
+      margin-top: 30px;
+      text-align: center;
+    }
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+    }
+    .options button {
+      min-width: 100px;
+      transition: all 0.3s ease;
+    }
+    .hidden {
+      display: none;
+    }
+    .correct {
+      background-color: #4caf50 !important;
+      color: white !important;
+    }
+    .incorrect {
+      background-color: #f44336 !important;
+      color: white !important;
+    }
+    .flash {
+      animation: flashAnim 0.5s ease;
+    }
+    @keyframes flashAnim {
+      0% { opacity: 1; }
+      50% { opacity: 0.2; }
+      100% { opacity: 1; }
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 12px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" alt="Spring School Logo" onclick="goHome()" style="cursor:pointer;" />
+    
+  </header>
+
+  <div class="menu" id="menu">
+    <select id="modeSelect">
+      <option value="hiraToRoma">Hiragana → Romaji</option>
+      <option value="kataToRoma">Katakana → Romaji</option>
+      <option value="romaToHira">Romaji → Hiragana</option>
+      <option value="romaToKata">Romaji → Katakana</option>
+      <option value="hiraToKata">Hiragana → Katakana</option>
+      <option value="kataToHira">Katakana → Hiragana</option>
+    </select>
+
+    <select id="responseType">
+      <option value="button">Answer with Buttons</option>
+      <option value="input">Answer by Typing</option>
+    </select>
+
+    <select id="levelSelect">
+      <option value="1">Level 1 (Basic)</option>
+      <option value="2">Level 2 (NA~RO)</option>
+      <option value="3">Level 3 (Dakuten)</option>
+      <option value="4">Level 4 (Combinations)</option>
+      <option value="all">All Levels</option>
+    </select>
+
+    <select id="difficulty">
+      <option value="easy">Easy (3 options)</option>
+      <option value="medium">Medium (5 options)</option>
+      
+    </select>
+
+    <button onclick="startGame()">Start Game</button>
+  </div>
+
+  <div class="game-container hidden" id="game">
+    <div id="kanaSymbol">?</div>
+    <div class="options" id="buttonOptions"></div>
+    <input type="text" id="textInput" class="hidden" placeholder="Type your answer" oninput="checkInputAnswer()"/>
+  </div>
+
+  <footer>
+    beta version · Developed by Leo
+  </footer>
+<div id="progressContainer" style="position: fixed; bottom: 0; left: 0; width: 100%; background: #ddd; height: 8px;">
+  <div id="progressBar" style="height: 100%; width: 0%; background: #4caf50; transition: width 0.3s ease;"></div>
+</div>
+
+
+
+<script>
+const kanaData = {
+  1: [
+    { hira: "あ", kata: "ア", roma: "A" }, { hira: "い", kata: "イ", roma: "I" },
+    { hira: "う", kata: "ウ", roma: "U" }, { hira: "え", kata: "エ", roma: "E" },
+    { hira: "お", kata: "オ", roma: "O" }, { hira: "か", kata: "カ", roma: "KA" },
+    { hira: "き", kata: "キ", roma: "KI" }, { hira: "く", kata: "ク", roma: "KU" },
+    { hira: "け", kata: "ケ", roma: "KE" }, { hira: "こ", kata: "コ", roma: "KO" },
+    { hira: "さ", kata: "サ", roma: "SA" }, { hira: "し", kata: "シ", roma: "SHI" },
+    { hira: "す", kata: "ス", roma: "SU" }, { hira: "せ", kata: "セ", roma: "SE" },
+    { hira: "そ", kata: "ソ", roma: "SO" }, { hira: "た", kata: "タ", roma: "TA" },
+    { hira: "ち", kata: "チ", roma: "CHI" }, { hira: "つ", kata: "ツ", roma: "TSU" },
+    { hira: "て", kata: "テ", roma: "TE" }, { hira: "と", kata: "ト", roma: "TO" },
+    { hira: "ん", kata: "ン", roma: "N" }
+  ],
+  2: [
+    { hira: "な", kata: "ナ", roma: "NA" }, { hira: "に", kata: "ニ", roma: "NI" },
+    { hira: "ぬ", kata: "ヌ", roma: "NU" }, { hira: "ね", kata: "ネ", roma: "NE" },
+    { hira: "の", kata: "ノ", roma: "NO" }, { hira: "は", kata: "ハ", roma: "HA" },
+    { hira: "ひ", kata: "ヒ", roma: "HI" }, { hira: "ふ", kata: "フ", roma: "FU" },
+    { hira: "へ", kata: "ヘ", roma: "HE" }, { hira: "ほ", kata: "ホ", roma: "HO" },
+    { hira: "ま", kata: "マ", roma: "MA" }, { hira: "み", kata: "ミ", roma: "MI" },
+    { hira: "む", kata: "ム", roma: "MU" }, { hira: "め", kata: "メ", roma: "ME" },
+    { hira: "も", kata: "モ", roma: "MO" }, { hira: "や", kata: "ヤ", roma: "YA" },
+    { hira: "ゆ", kata: "ユ", roma: "YU" }, { hira: "よ", kata: "ヨ", roma: "YO" },
+    { hira: "ら", kata: "ラ", roma: "RA" }, { hira: "り", kata: "リ", roma: "RI" },
+    { hira: "る", kata: "ル", roma: "RU" }, { hira: "れ", kata: "レ", roma: "RE" },
+    { hira: "ろ", kata: "ロ", roma: "RO" }, { hira: "わ", kata: "ワ", roma: "WA" },
+    { hira: "を", kata: "ヲ", roma: "WO" }
+  ],
+  3: [
+    { hira: "が", kata: "ガ", roma: "GA" }, { hira: "ぎ", kata: "ギ", roma: "GI" },
+    { hira: "ぐ", kata: "グ", roma: "GU" }, { hira: "げ", kata: "ゲ", roma: "GE" },
+    { hira: "ご", kata: "ゴ", roma: "GO" }, { hira: "ざ", kata: "ザ", roma: "ZA" },
+    { hira: "じ", kata: "ジ", roma: "JI" }, { hira: "ず", kata: "ズ", roma: "ZU" },
+    { hira: "ぜ", kata: "ゼ", roma: "ZE" }, { hira: "ぞ", kata: "ゾ", roma: "ZO" },
+    { hira: "だ", kata: "ダ", roma: "DA" }, { hira: "ぢ", kata: "ヂ", roma: "JI" },
+    { hira: "づ", kata: "ヅ", roma: "ZU" }, { hira: "で", kata: "デ", roma: "DE" },
+    { hira: "ど", kata: "ド", roma: "DO" }, { hira: "ば", kata: "バ", roma: "BA" },
+    { hira: "び", kata: "ビ", roma: "BI" }, { hira: "ぶ", kata: "ブ", roma: "BU" },
+    { hira: "べ", kata: "ベ", roma: "BE" }, { hira: "ぼ", kata: "ボ", roma: "BO" },
+    { hira: "ぱ", kata: "パ", roma: "PA" }, { hira: "ぴ", kata: "ピ", roma: "PI" },
+    { hira: "ぷ", kata: "プ", roma: "PU" }, { hira: "ぺ", kata: "ペ", roma: "PE" },
+    { hira: "ぽ", kata: "ポ", roma: "PO" }
+  ],
+  4: [
+    { hira: "きゃ", kata: "キャ", roma: "KYA" }, { hira: "きゅ", kata: "キュ", roma: "KYU" },
+    { hira: "きょ", kata: "キョ", roma: "KYO" }, { hira: "しゃ", kata: "シャ", roma: "SHA" },
+    { hira: "しゅ", kata: "シュ", roma: "SHU" }, { hira: "しょ", kata: "ショ", roma: "SHO" },
+    { hira: "ちゃ", kata: "チャ", roma: "CHA" }, { hira: "ちゅ", kata: "チュ", roma: "CHU" },
+    { hira: "ちょ", kata: "チョ", roma: "CHO" }, { hira: "にゃ", kata: "ニャ", roma: "NYA" },
+    { hira: "にゅ", kata: "ニュ", roma: "NYU" }, { hira: "にょ", kata: "ニョ", roma: "NYO" },
+    { hira: "ひゃ", kata: "ヒャ", roma: "HYA" }, { hira: "ひゅ", kata: "ヒュ", roma: "HYU" },
+    { hira: "ひょ", kata: "ヒョ", roma: "HYO" }, { hira: "みゃ", kata: "ミャ", roma: "MYA" },
+    { hira: "みゅ", kata: "ミュ", roma: "MYU" }, { hira: "みょ", kata: "ミョ", roma: "MYO" },
+    { hira: "りゃ", kata: "リャ", roma: "RYA" }, { hira: "りゅ", kata: "リュ", roma: "RYU" },
+    { hira: "りょ", kata: "リョ", roma: "RYO" }, { hira: "ぎゃ", kata: "ギャ", roma: "GYA" },
+    { hira: "ぎゅ", kata: "ギュ", roma: "GYU" }, { hira: "ぎょ", kata: "ギョ", roma: "GYO" },
+    { hira: "じゃ", kata: "ジャ", roma: "JA" }, { hira: "じゅ", kata: "ジュ", roma: "JU" },
+    { hira: "じょ", kata: "ジョ", roma: "JO" }, { hira: "びゃ", kata: "ビャ", roma: "BYA" },
+    { hira: "びゅ", kata: "ビュ", roma: "BYU" }, { hira: "びょ", kata: "ビョ", roma: "BYO" },
+    { hira: "ぴゃ", kata: "ピャ", roma: "PYA" }, { hira: "ぴゅ", kata: "ピュ", roma: "PYU" },
+    { hira: "ぴょ", kata: "ピョ", roma: "PYO" }
+  ]
+};
+
+let currentMode = "";
+let responseType = "";
+let currentLevel = "";
+let currentDifficulty = "";
+let currentQuestion = {};
+let remainingQuestions = [];
+let totalQuestions = 0;
+
+function goHome() {
+  document.getElementById("game").classList.add("hidden");
+  document.getElementById("menu").classList.remove("hidden");
+  document.getElementById("progressBar").style.width = "0%";
+}
+
+function getKanaList() {
+  if (currentLevel === "all") {
+    return Object.values(kanaData).flat();
+  } else {
+    return kanaData[currentLevel] || [];
+  }
+}
+
+function startGame() {
+  document.getElementById("menu").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+
+  currentMode = document.getElementById("modeSelect").value;
+  responseType = document.getElementById("responseType").value;
+  currentLevel = document.getElementById("levelSelect").value;
+  currentDifficulty = document.getElementById("difficulty").value;
+
+  const kanaList = getKanaList();
+  remainingQuestions = [...kanaList].sort(() => Math.random() - 0.5);
+  totalQuestions = remainingQuestions.length;
+
+  updateProgressBar();
+  nextQuestion();
+    checkPopupOnFinish();
+  }
+
+function updateProgressBar() {
+  const answered = totalQuestions - remainingQuestions.length;
+  const percentage = (answered / totalQuestions) * 100;
+  document.getElementById("progressBar").style.width = percentage + "%";
+}
+
+function nextQuestion() {
+  if (remainingQuestions.length === 0) {
+    goHome();
+    return;
+  }
+
+  currentQuestion = remainingQuestions.shift();
+  let display = "?";
+  let answer = "";
+
+  switch (currentMode) {
+    case "hiraToRoma": display = currentQuestion.hira; answer = currentQuestion.roma; break;
+    case "kataToRoma": display = currentQuestion.kata; answer = currentQuestion.roma; break;
+    case "romaToHira": display = currentQuestion.roma; answer = currentQuestion.hira; break;
+    case "romaToKata": display = currentQuestion.roma; answer = currentQuestion.kata; break;
+    case "hiraToKata": display = currentQuestion.hira; answer = currentQuestion.kata; break;
+    case "kataToHira": display = currentQuestion.kata; answer = currentQuestion.hira; break;
+  }
+
+  currentQuestion.correct = answer;
+  document.getElementById("kanaSymbol").textContent = display;
+
+  const optionsContainer = document.getElementById("buttonOptions");
+  const inputBox = document.getElementById("textInput");
+
+  if (responseType === "button") {
+    optionsContainer.classList.remove("hidden");
+    inputBox.classList.add("hidden");
+    optionsContainer.innerHTML = "";
+
+    const correct = currentQuestion.correct;
+    const options = [correct];
+
+    const pool = getKanaList().map(k => {
+      switch (currentMode) {
+        case "hiraToRoma":
+        case "kataToRoma":
+          return k.roma;
+        case "romaToHira":
+        case "kataToHira":
+          return k.hira;
+        case "romaToKata":
+        case "hiraToKata":
+          return k.kata;
+        default:
+          return "";
+      }
+    });
+
+    while (options.length < (currentDifficulty === "easy" ? 3 : 5)) {
+      const rand = pool[Math.floor(Math.random() * pool.length)];
+      if (!options.includes(rand)) options.push(rand);
+    }
+
+    options.sort(() => Math.random() - 0.5);
+
+    options.forEach(opt => {
+      const btn = document.createElement("button");
+      btn.textContent = opt;
+      btn.onclick = () => {
+        btn.classList.add("flash");
+        if (opt === correct) {
+          btn.classList.add("correct");
+          setTimeout(() => {
+            btn.classList.remove("correct", "flash");
+            updateProgressBar();
+            nextQuestion();
+    checkPopupOnFinish();
+  }, 500);
+        } else {
+          btn.classList.add("incorrect");
+          remainingQuestions.push(currentQuestion);
+          setTimeout(() => btn.classList.remove("incorrect", "flash"), 500);
+        }
+      };
+      optionsContainer.appendChild(btn);
+    });
+
+  } else {
+    optionsContainer.classList.add("hidden");
+    inputBox.classList.remove("hidden");
+    inputBox.value = "";
+    inputBox.focus();
+  }
+}
+
+function checkInputAnswer() {
+  const input = document.getElementById("textInput");
+  const user = input.value.trim().toUpperCase();
+  const correct = currentQuestion.correct.trim().toUpperCase();
+
+  input.classList.remove("correct", "incorrect", "flash");
+
+  if (user.length >= correct.length) {
+    if (user === correct) {
+      input.classList.add("correct", "flash");
+      setTimeout(() => {
+        input.classList.remove("correct", "flash");
+        updateProgressBar();
+        nextQuestion();
+    checkPopupOnFinish();
+  }, 500);
+    } else {
+      input.classList.add("incorrect", "flash");
+      remainingQuestions.push(currentQuestion);
+      setTimeout(() => input.classList.remove("incorrect", "flash"), 500);
+    }
+  }
+}
+
+let popupTimers = [60, 180, 300, 480]; // segundos
+let popupShown = new Set();
+
+popupTimers.forEach((time, index) => {
+  setTimeout(() => {
+    if (!popupShown.has(time)) {
+      popupShown.add(time);
+      document.getElementById("promoPopup").style.display = "block";
+    }
+  }, time * 1000);
+});
+
+// Também exibe ao finalizar o set de perguntas
+function checkPopupOnFinish() {
+  if (remainingQuestions.length === 0) {
+    document.getElementById("promoPopup").style.display = "block";
+  }
+}
+
+</script>
+
+
+<!-- Popup -->
+<div id="promoPopup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%);
+background:#fff; border:3px solid #003366; padding:30px; border-radius:12px; box-shadow:0 4px 8px rgba(0,0,0,0.2);
+z-index:9999; max-width:90%; width:320px; font-family:'Segoe UI', sans-serif; color:#003366;">
+  <div style="text-align:right;">
+    <span onclick="document.getElementById('promoPopup').style.display='none'" 
+      style="cursor:pointer; font-weight:bold; font-size:20px;">✖</span>
+  </div>
+  <h2 style="margin-top:0;">Venha estudar japonês na Spring!</h2>
+  <p><a href="https://springschool.me" target="_blank" style="color:#0077cc; font-weight:bold;">🌐 Site da Escola</a></p>
+  <p><a href="https://wa.me/819012345678" target="_blank" style="color:#25D366; font-weight:bold;">📲 Fale conosco no WhatsApp</a></p>
+  <div style="text-align:center; margin-top:20px;">
+    
+  </div>
+</div>
+
+
+<!-- Botão de teste (pode remover depois) -->
+<button style="display:none;" onclick="closePopupPermanently()">[TEST] Fechar popup</button>
+
+</body>
+</html>
