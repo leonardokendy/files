@@ -20,7 +20,20 @@
     .card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 1.5rem; text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
     .card h2 { margin: 0.5rem 0; font-size: 1.2rem; }
     .card p { font-size: 0.95rem; color: #555; }
-    .card .tag { font-size: 0.75rem; color: #fff; background: #4a90e2; display: inline-block; padding: 0.25rem 0.5rem; border-radius: 6px; margin: 0.5rem 0; }
+    .tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      justify-content: center;
+      margin-top: 0.5rem;
+    }
+    .tag {
+      font-size: 0.75rem;
+      color: #fff;
+      background: #4a90e2;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+    }
     .card a { display: inline-block; background: #ffc107; color: #000; text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; margin-top: 0.5rem; }
     footer { position: fixed; bottom: 0; left: 0; right: 0; background: #4a90e2; display: flex; justify-content: center; gap: 2rem; padding: 0.75rem 0; z-index: 1000; }
     footer button { background: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
@@ -63,7 +76,6 @@
     #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 1rem 2rem; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.5s ease-in-out; z-index: 2000; }
     #toast.show { display: block; opacity: 1; }
   </style>
-  <!-- SDK compatível com HTML simples -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -172,7 +184,6 @@
   function addRow() {
     const table = document.getElementById('gameTable');
     const row = table.insertRow();
-
     const placeholders = ['Game Name', 'URL', 'Description', 'Tags (comma-separated)', 'Type'];
     placeholders.forEach(text => {
       const cell = row.insertCell();
@@ -181,7 +192,6 @@
       input.placeholder = text;
       cell.appendChild(input);
     });
-
     const actionsCell = row.insertCell();
     const delBtn = document.createElement('button');
     delBtn.textContent = '🗑️';
@@ -205,12 +215,10 @@
         tags: inputs[3].value.trim(),
         tipo: inputs[4].value.trim()
       };
-
       if (!data.nome || !data.link) {
         console.warn('⚠️ Campos obrigatórios ausentes:', data.nome);
         return;
       }
-
       hasValid = true;
       db.collection('games').doc().set(data).then(loadFromFirebase);
     });
@@ -222,21 +230,32 @@
   function renderCard(g) {
     const card = document.createElement('div');
     card.className = 'card';
-
     const isArquivo = g.link && /\.(pdf|zip|docx?|xlsx?|pptx?|mp3|mp4)$/i.test(g.link);
     const label = isArquivo ? 'Download' : 'Play';
-
     const a = document.createElement('a');
     a.href = g.link;
     a.textContent = label;
     a.target = '_blank';
     if (isArquivo) a.setAttribute('download', '');
 
+    const tagsArray = Array.isArray(g.tags)
+      ? g.tags
+      : g.tags.split(',').map(t => t.trim().toLowerCase());
+
+    const tagContainer = document.createElement('div');
+    tagContainer.className = 'tag-container';
+    tagsArray.forEach(tag => {
+      const tagDiv = document.createElement('div');
+      tagDiv.className = 'tag';
+      tagDiv.textContent = tag;
+      tagContainer.appendChild(tagDiv);
+    });
+
     card.innerHTML = `
       <h2>${g.nome}</h2>
       <p>${g.descricao}</p>
-      <div class="tag">${g.tags}</div>
     `;
+    card.appendChild(tagContainer);
     card.appendChild(a);
     document.getElementById('homeGrid').appendChild(card);
   }
@@ -244,7 +263,7 @@
   function renderTagFilters() {
     const container = document.getElementById('tagFilters');
     container.innerHTML = '';
-    const tags = [...new Set(allGames.flatMap(g => g.tags.split(',').map(t => t.trim().toLowerCase())))];
+    const tags = [...new Set(allGames.flatMap(g => (Array.isArray(g.tags) ? g.tags : g.tags.split(',').map(t => t.trim().toLowerCase()))))];
     tags.forEach(tag => {
       const btn = document.createElement('button');
       btn.className = 'filter-tag';
@@ -267,9 +286,10 @@
   function filterCards() {
     const filtered = selectedTags.length === 0
       ? allGames
-      : allGames.filter(g =>
-          selectedTags.every(tag => g.tags.toLowerCase().includes(tag))
-        );
+      : allGames.filter(g => {
+          const tags = Array.isArray(g.tags) ? g.tags : g.tags.split(',').map(t => t.trim().toLowerCase());
+          return selectedTags.every(tag => tags.includes(tag));
+        });
     document.getElementById('homeGrid').innerHTML = '';
     filtered.forEach(renderCard);
   }
@@ -283,6 +303,5 @@
     });
   }
 </script>
-
 </body>
 </html>
