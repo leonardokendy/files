@@ -38,8 +38,7 @@
     }
     #gameTable th { display: none; }
     #gameTable td { border: none; padding: 0.5rem; vertical-align: top; }
-    #gameTable input[type="text"], 
-    #gameTable input[type="file"] {
+    #gameTable input[type="text"] {
       width: 100%;
       padding: 0.4rem 0.6rem;
       border: 1px solid #ccc;
@@ -47,7 +46,6 @@
       font-size: 0.9rem;
       box-sizing: border-box;
     }
-    #gameTable input[type="file"] { background: #f7f7f7; }
     #gameTable tr { background: #f9f9f9; border-radius: 8px; }
     #gameTable tr td:last-child { text-align: center; }
     #gameTable button {
@@ -68,7 +66,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 </head>
 <body>
 <header>
@@ -81,10 +78,12 @@
   </div>
   <button class="login-btn" onclick="handleLogin()">Login</button>
 </header>
+
 <main id="homeView" class="active">
   <div id="tagFilters"></div>
   <div class="grid" id="homeGrid"></div>
 </main>
+
 <main id="databaseView">
   <div class="btn-bar">
     <button onclick="addRow()">➕ Add Game</button>
@@ -102,11 +101,11 @@
       <th>Descrição</th>
       <th>Tags</th>
       <th>Tipo</th>
-      <th>Arquivo</th>
       <th>Ações</th>
     </tr>
   </table>
 </main>
+
 <footer>
   <button onclick="switchView('home')">🏠 Home</button>
   <button onclick="switchView('database')">📁 Banco de Dados</button>
@@ -125,9 +124,19 @@
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
-  const storage = firebase.storage();
+
   let allGames = [];
   let selectedTags = [];
+  let userLogged = false;
+
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      document.querySelector('.login-btn').textContent = user.displayName;
+      document.querySelector('.login-btn').disabled = true;
+      userLogged = true;
+      loadFromFirebase();
+    }
+  });
 
   function handleLogin() {
     const provider = new firebase.auth.GoogleAuthProvider();
@@ -135,16 +144,20 @@
       .then(result => {
         document.querySelector('.login-btn').textContent = result.user.displayName;
         document.querySelector('.login-btn').disabled = true;
+        userLogged = true;
         loadFromFirebase();
       })
       .catch(error => console.error('Erro no login:', error));
   }
 
   function switchView(view) {
+    if (view === 'database' && !userLogged) {
+      showToast("⚠️ Faça login para acessar o banco de dados.");
+      return;
+    }
     document.getElementById('homeView').classList.remove('active');
     document.getElementById('databaseView').classList.remove('active');
-    if (view === 'home') document.getElementById('homeView').classList.add('active');
-    else document.getElementById('databaseView').classList.add('active');
+    document.getElementById(view + 'View').classList.add('active');
   }
 
   function showToast(msg) {
@@ -158,27 +171,15 @@
     const table = document.getElementById('gameTable');
     const row = table.insertRow();
 
-    const placeholders = ['Game Name', 'URL or leave blank if uploading', 'Description', 'Tags (comma-separated)', 'Type (ex: game, pdf, quiz)'];
+    const placeholders = ['Game Name', 'URL', 'Description', 'Tags (comma-separated)', 'Type'];
 
-    placeholders.forEach((text) => {
+    placeholders.forEach(text => {
       const cell = row.insertCell();
       const input = document.createElement('input');
       input.type = 'text';
       input.placeholder = text;
       cell.appendChild(input);
     });
-
-    const uploadCell = row.insertCell();
-    const uploadInput = document.createElement('input');
-    uploadInput.type = 'file';
-
-    const uploadBtn = document.createElement('button');
-    uploadBtn.textContent = '⬆️ Upload';
-    uploadBtn.style.marginTop = '0.5rem';
-    uploadBtn.onclick = () => uploadFile(row);
-
-    uploadCell.appendChild(uploadInput);
-    uploadCell.appendChild(uploadBtn);
 
     const actionsCell = row.insertCell();
     const delBtn = document.createElement('button');
@@ -189,32 +190,6 @@
     actionsCell.appendChild(delBtn);
   }
 
-  function uploadFile(row) {
-    const fileInput = row.querySelector('input[type="file"]');
-    const urlInput = row.cells[1].querySelector('input[type="text"]');
-
-    if (!fileInput || fileInput.files.length === 0) {
-      alert('Selecione um arquivo primeiro.');
-      return;
-    }
-
-    const file = fileInput.files[0];
-    const storageRef = storage.ref('uploads/' + file.name);
-
-    showToast('⏳ Enviando arquivo...');
-
-    storageRef.put(file)
-      .then(snapshot => snapshot.ref.getDownloadURL())
-      .then(url => {
-        urlInput.value = url;
-        showToast('✅ Upload concluído!');
-      })
-      .catch(err => {
-        console.error('Erro no upload:', err);
-        showToast('❌ Falha no upload!');
-      });
-  }
-
   function saveToFirebase() {
     const table = document.getElementById('gameTable');
     const rows = Array.from(table.rows).slice(1);
@@ -222,7 +197,6 @@
 
     rows.forEach(row => {
       const inputs = row.querySelectorAll('input[type="text"]');
-      const fileInput = row.querySelector('input[type="file"]');
       const data = {
         nome: inputs[0].value.trim(),
         link: inputs[1].value.trim(),
@@ -231,32 +205,17 @@
         tipo: inputs[4].value.trim()
       };
 
-      const hasFile = fileInput && fileInput.files.length > 0;
-
-      if (!data.nome || (!data.link && !hasFile)) {
+      if (!data.nome || !data.link) {
         console.warn('⚠️ Campos obrigatórios ausentes:', data.nome);
         return;
       }
 
       hasValid = true;
-      const docRef = db.collection('games').doc();
-
-      if (hasFile) {
-        const file = fileInput.files[0];
-        const storageRef = storage.ref('uploads/' + file.name);
-        storageRef.put(file).then(snapshot => {
-          snapshot.ref.getDownloadURL().then(url => {
-            data.link = url;
-            docRef.set(data).then(loadFromFirebase);
-          });
-        });
-      } else {
-        docRef.set(data).then(loadFromFirebase);
-      }
+      db.collection('games').doc().set(data).then(loadFromFirebase);
     });
 
     if (hasValid) showToast('💾 Jogos salvos com sucesso!');
-    else showToast('⚠️ Preencha nome e link ou envie um arquivo!');
+    else showToast('⚠️ Preencha nome e link!');
   }
 
   function renderCard(g) {
