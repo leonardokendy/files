@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>S.T.A.G.E</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5faff; margin: 0; padding: 0 0 60px 0; }
+    header { background: #4a90e2; color: white; padding: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
+    header img { height: 50px; }
+    .header-title { display: flex; flex-direction: column; }
+    h1 { font-size: 2rem; margin: 0; }
+    .subtitle { font-size: 0.9rem; font-style: italic; margin-top: 0.2rem; }
+    .login-btn { background: white; color: #4a90e2; font-weight: bold; padding: 0.4rem 1rem; border-radius: 6px; cursor: pointer; border: none; }
+    #tagFilters { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 1rem 2rem 0; }
+    .filter-tag { background: #e0e0e0; border: none; border-radius: 6px; padding: 0.4rem 0.8rem; cursor: pointer; font-size: 0.85rem; }
+    .filter-tag.active { background: #4a90e2; color: white; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; padding: 2rem; max-width: 1200px; margin: 0 auto; }
+    .card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 1.5rem; text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
+    .card h2 { margin: 0.5rem 0; font-size: 1.2rem; }
+    .card p { font-size: 0.95rem; color: #555; }
+    .tag-container { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin-top: 0.5rem; }
+    .tag { font-size: 0.75rem; color: #fff; background: #4a90e2; padding: 0.25rem 0.5rem; border-radius: 6px; }
+    .card a { display: inline-block; background: #ffc107; color: #000; text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; margin-top: 0.5rem; }
+    footer { position: fixed; bottom: 0; left: 0; right: 0; background: #4a90e2; display: flex; justify-content: center; gap: 2rem; padding: 0.75rem 0; z-index: 1000; }
+    footer button { background: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    #homeView, #databaseView { display: none; }
+    #homeView.active, #databaseView.active { display: block; }
+    #gameTable {
+      width: 90%;
+      margin: 2rem auto;
+      border-collapse: separate;
+      border-spacing: 0 0.5rem;
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    #gameTable th { display: none; }
+    #gameTable td { border: none; padding: 0.5rem; vertical-align: top; }
+    #gameTable input[type="text"] {
+      width: 100%;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      box-sizing: border-box;
+    }
+    #gameTable textarea {
+      width: 100%;
+      min-height: 90px;
+      max-width: 100%;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+    #gameTable tr { background: #f9f9f9; border-radius: 8px; }
+    #gameTable tr td:last-child { text-align: center; }
+    #gameTable button {
+      font-size: 0.85rem;
+      background: #4a90e2;
+      color: white;
+      border: none;
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 0.4rem;
+    }
+    .btn-bar { margin: 1rem 2rem; }
+    .btn-bar button, .btn-bar select { margin-right: 1rem; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; }
+    #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 1rem 2rem; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.5s ease-in-out; z-index: 2000; }
+    #toast.show { display: block; opacity: 1; }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" alt="Spring School Logo"/>
+    <div class="header-title">
+      <h1>S.T.A.G.E</h1>
+      <div class="subtitle">Spring Platform for Resources, Ideas, Notes and Tools</div>
+    </div>
+  </div>
+  <button class="login-btn" onclick="handleLogin()">Login</button>
+</header>
+
+<main id="homeView" class="active">
+  <div id="tagFilters"></div>
+  <div class="grid" id="homeGrid"></div>
+</main>
+
+<main id="databaseView">
+  <div class="btn-bar">
+    <button onclick="addRow()">➕ Add Game</button>
+    <button onclick="saveToFirebase()">💾 Save All</button>
+    <!-- Drop-down removido -->
+  </div>
+  <table id="gameTable">
+    <tr>
+      <th>Nome</th>
+      <th>Link</th>
+      <th>Descrição</th>
+      <th>Tags</th>
+      <th>Tipo</th>
+      <th>Ações</th>
+    </tr>
+  </table>
+</main>
+
+<footer>
+  <button onclick="switchView('home')">🏠 Home</button>
+  <button onclick="switchView('database')">📁 Banco de Dados</button>
+</footer>
+<div id="toast">💾 Jogos salvos com sucesso!</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAsYg7ZTHXD_a6d_icFLw9e5y0jSTfXBi0",
+    authDomain: "spring-stage-by-leo.firebaseapp.com",
+    projectId: "spring-stage-by-leo",
+    storageBucket: "spring-stage-by-leo.firebasestorage.app",
+    messagingSenderId: "215839443924",
+    appId: "1:215839443924:web:16a9fae4a0a5da76f16441",
+    measurementId: "G-JEE5SLV9YP"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  let allGames = [];
+  let selectedTags = [];
+  let userLogged = false;
+
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      document.querySelector('.login-btn').textContent = user.displayName;
+      document.querySelector('.login-btn').disabled = true;
+      userLogged = true;
+      loadFromFirebase();
+    }
+  });
+
+  function handleLogin() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider)
+      .then(result => {
+        document.querySelector('.login-btn').textContent = result.user.displayName;
+        document.querySelector('.login-btn').disabled = true;
+        userLogged = true;
+        loadFromFirebase();
+      })
+      .catch(error => console.error('Erro no login:', error));
+  }
+
+  function switchView(view) {
+    if (view === 'database' && !userLogged) {
+      showToast("⚠️ Faça login para acessar o banco de dados.");
+      return;
+    }
+    document.getElementById('homeView').classList.remove('active');
+    document.getElementById('databaseView').classList.remove('active');
+    document.getElementById(view + 'View').classList.add('active');
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  function addRow() {
+    const table = document.getElementById('gameTable');
+    const row = table.insertRow();
+    const placeholders = ['Game Name', 'URL', 'Description', 'Tags (comma-separated)', 'Type'];
+    placeholders.forEach((text, idx) => {
+      const cell = row.insertCell();
+      if (idx === 2) {
+        // Campo de descrição é textarea com 5 linhas
+        const textarea = document.createElement('textarea');
+        textarea.placeholder = text;
+        textarea.rows = 5;
+        cell.appendChild(textarea);
+      } else {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = text;
+        cell.appendChild(input);
+      }
+    });
+    row.insertCell(); // Ações (vazio, botão de deletar removido)
+  }
+
+  function saveToFirebase() {
+    const table = document.getElementById('gameTable');
+    const rows = Array.from(table.rows).slice(1);
+    let hasValid = false;
+
+    rows.forEach(row => {
+      const cells = row.querySelectorAll('input[type="text"], textarea');
+      const data = {
+        nome: cells[0].value.trim(),
+        link: cells[1].value.trim(),
+        descricao: cells[2].value.trim(),
+        tags: cells[3].value.trim(),
+        tipo: cells[4].value.trim()
+      };
+      if (!data.nome || !data.link) {
+        console.warn('⚠️ Campos obrigatórios ausentes:', data.nome);
+        return;
+      }
+      hasValid = true;
+      db.collection('games').doc().set(data).then(loadFromFirebase);
+    });
+
+    if (hasValid) showToast('💾 Jogos salvos com sucesso!');
+    else showToast('⚠️ Preencha nome e link!');
+  }
+
+  function renderCard(g) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const isArquivo = g.link && /\.(pdf|zip|docx?|xlsx?|pptx?|mp3|mp4)$/i.test(g.link);
+    const label = isArquivo ? 'Download' : 'Play';
+    const a = document.createElement('a');
+    a.href = g.link;
+    a.textContent = label;
+    a.target = '_blank';
+    if (isArquivo) a.setAttribute('download', '');
+
+    const tagsArray = Array.isArray(g.tags)
+      ? g.tags
+      : g.tags.split(',').map(t => t.trim().toLowerCase());
+
+    const tagContainer = document.createElement('div');
+    tagContainer.className = 'tag-container';
+    tagsArray.forEach(tag => {
+      const tagDiv = document.createElement('div');
+      tagDiv.className = 'tag';
+      tagDiv.textContent = tag;
+      tagContainer.appendChild(tagDiv);
+    });
+
+    card.innerHTML = `
+      <h2>${g.nome}</h2>
+      <p>${g.descricao}</p>
+    `;
+    card.appendChild(tagContainer);
+    card.appendChild(a);
+    document.getElementById('homeGrid').appendChild(card);
+  }
+
+  function renderTagFilters() {
+    const container = document.getElementById('tagFilters');
+    container.innerHTML = '';
+    const tags = [...new Set(allGames.flatMap(g => (Array.isArray(g.tags) ? g.tags : g.tags.split(',').map(t => t.trim().toLowerCase()))))];
+    tags.forEach(tag => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-tag';
+      btn.textContent = tag;
+      btn.onclick = () => toggleTag(tag, btn);
+      container.appendChild(btn);
+    });
+  }
+
+  function toggleTag(tag, button) {
+    button.classList.toggle('active');
+    if (selectedTags.includes(tag)) {
+      selectedTags = selectedTags.filter(t => t !== tag);
+    } else {
+      selectedTags.push(tag);
+    }
+    filterCards();
+  }
+
+  function filterCards() {
+    const filtered = selectedTags.length === 0
+      ? allGames
+      : allGames.filter(g => {
+          const tags = Array.isArray(g.tags) ? g.tags : g.tags.split(',').map(t => t.trim().toLowerCase());
+          return selectedTags.every(tag => tags.includes(tag));
+        });
+    document.getElementById('homeGrid').innerHTML = '';
+    filtered.forEach(renderCard);
+  }
+
+  function loadFromFirebase() {
+    db.collection("games").get().then(snapshot => {
+      allGames = snapshot.docs.map(doc => doc.data());
+      document.getElementById('homeGrid').innerHTML = '';
+      allGames.forEach(renderCard);
+      renderTagFilters();
+    });
+  }
+</script>
+</body>
+</html>
