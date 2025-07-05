@@ -20,20 +20,8 @@
     .card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 1.5rem; text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
     .card h2 { margin: 0.5rem 0; font-size: 1.2rem; }
     .card p { font-size: 0.95rem; color: #555; }
-    .tag-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      justify-content: center;
-      margin-top: 0.5rem;
-    }
-    .tag {
-      font-size: 0.75rem;
-      color: #fff;
-      background: #4a90e2;
-      padding: 0.25rem 0.5rem;
-      border-radius: 6px;
-    }
+    .tag-container { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin-top: 0.5rem; }
+    .tag { font-size: 0.75rem; color: #fff; background: #4a90e2; padding: 0.25rem 0.5rem; border-radius: 6px; }
     .card a { display: inline-block; background: #ffc107; color: #000; text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; margin-top: 0.5rem; }
     footer { position: fixed; bottom: 0; left: 0; right: 0; background: #4a90e2; display: flex; justify-content: center; gap: 2rem; padding: 0.75rem 0; z-index: 1000; }
     footer button { background: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
@@ -58,6 +46,17 @@
       border-radius: 6px;
       font-size: 0.9rem;
       box-sizing: border-box;
+    }
+    #gameTable textarea {
+      width: 100%;
+      min-height: 90px;
+      max-width: 100%;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      box-sizing: border-box;
+      resize: vertical;
     }
     #gameTable tr { background: #f9f9f9; border-radius: 8px; }
     #gameTable tr td:last-child { text-align: center; }
@@ -101,11 +100,7 @@
   <div class="btn-bar">
     <button onclick="addRow()">➕ Add Game</button>
     <button onclick="saveToFirebase()">💾 Save All</button>
-    <select onchange="sortGames(this.value)">
-      <option value="">Ordenar por...</option>
-      <option value="nome">Nome</option>
-      <option value="tags">Tags</option>
-    </select>
+    <!-- Drop-down removido -->
   </div>
   <table id="gameTable">
     <tr>
@@ -185,20 +180,22 @@
     const table = document.getElementById('gameTable');
     const row = table.insertRow();
     const placeholders = ['Game Name', 'URL', 'Description', 'Tags (comma-separated)', 'Type'];
-    placeholders.forEach(text => {
+    placeholders.forEach((text, idx) => {
       const cell = row.insertCell();
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.placeholder = text;
-      cell.appendChild(input);
+      if (idx === 2) {
+        // Campo de descrição é textarea com 5 linhas
+        const textarea = document.createElement('textarea');
+        textarea.placeholder = text;
+        textarea.rows = 5;
+        cell.appendChild(textarea);
+      } else {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = text;
+        cell.appendChild(input);
+      }
     });
-    const actionsCell = row.insertCell();
-    const delBtn = document.createElement('button');
-    delBtn.textContent = '🗑️';
-    delBtn.onclick = () => {
-      if (confirm('Deseja excluir esta linha?')) row.remove();
-    };
-    actionsCell.appendChild(delBtn);
+    row.insertCell(); // Ações (vazio, botão de deletar removido)
   }
 
   function saveToFirebase() {
@@ -207,13 +204,13 @@
     let hasValid = false;
 
     rows.forEach(row => {
-      const inputs = row.querySelectorAll('input[type="text"]');
+      const cells = row.querySelectorAll('input[type="text"], textarea');
       const data = {
-        nome: inputs[0].value.trim(),
-        link: inputs[1].value.trim(),
-        descricao: inputs[2].value.trim(),
-        tags: inputs[3].value.trim(),
-        tipo: inputs[4].value.trim()
+        nome: cells[0].value.trim(),
+        link: cells[1].value.trim(),
+        descricao: cells[2].value.trim(),
+        tags: cells[3].value.trim(),
+        tipo: cells[4].value.trim()
       };
       if (!data.nome || !data.link) {
         console.warn('⚠️ Campos obrigatórios ausentes:', data.nome);
