@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4th of July – Independence Day</title>
+  <style>
+:root {
+  --blue: #14387b;
+  --red: #b40b19;
+  --gray: #f5f6fa;
+  --shadow: rgba(20,56,123,0.14);
+  --gradient-bg: linear-gradient(135deg, #f5f6fa 0%, #e8eaf6 100%);
+}
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--gradient-bg);
+  color: var(--blue);
+  min-height: 100vh;
+  padding-bottom: 70px;
+  overflow-x: hidden;
+}
+.header-bar {
+  background: linear-gradient(135deg, var(--blue) 0%, #1a4a8a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 90px;
+  box-shadow: 0 4px 20px var(--shadow);
+}
+.logo-header {
+  position: absolute;
+  left: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  z-index: 2;
+}
+.logo-header img {
+  height: 58px;
+  display: block;
+}
+.main-title {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-align: center;
+  white-space: nowrap;
+  margin: 0 auto;
+}
+footer {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, #fff 0%, #f8f9ff 100%);
+  border-top: 2px solid var(--gray);
+  padding: 2px 0 2px 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  align-items: center;
+  min-height: 36px;
+  box-shadow: 0 -3px 20px var(--shadow);
+}
+.footer-btn {
+  padding: 5px 18px;
+  border: 2px solid var(--blue);
+  background: #fff;
+  color: var(--blue);
+  border-radius: 21px;
+  font-size: 0.98em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  outline: none;
+}
+.footer-btn.active, .footer-btn:hover {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--red);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px var(--shadow);
+}
+
+/* --- Carousel --- */
+.carousel-container {
+  max-width: 540px;
+  margin: 38px auto 0 auto;
+  background: white;
+  border-radius: 22px;
+  box-shadow: 0 4px 24px #bbb5;
+  padding: 32px 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.carousel-image {
+  max-width: 420px;
+  width: 100%;
+  height: 230px;
+  object-fit: cover;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px #bbb8;
+  margin-bottom: 24px;
+}
+.carousel-text {
+  font-size: 1.25rem;
+  text-align: center;
+  min-height: 76px;
+  margin-bottom: 22px;
+}
+.carousel-nav {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+}
+.carousel-btn {
+  background: #3566b6;
+  color: white;
+  font-size: 1.7rem;
+  border: none;
+  border-radius: 50%;
+  width: 48px; height: 48px;
+  cursor: pointer;
+  transition: background .2s;
+  box-shadow: 0 2px 6px #aaa6;
+}
+.carousel-btn:active {
+  background: #23447a;
+}
+.carousel-indicator {
+  margin-top: 14px;
+  font-size: 1rem;
+  color: #777;
+}
+
+/* --- Vocabulary Game --- */
+#vocabSection .vocab-card {
+  background: linear-gradient(145deg, #fff 0%, #f8f9ff 100%);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px var(--shadow);
+  padding: 2rem;
+  width: 100%;
+  max-width: 1100px;
+  border: 1px solid rgba(255,255,255,0.2);
+  margin: 30px auto 0 auto;
+}
+.vocab-game-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  align-items: start;
+  max-width: 940px;
+  margin: 0 auto;
+}
+.vocab-section {
+  background: rgba(255,255,255,0.77);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+}
+.section-title {
+  font-size: 1.17rem;
+  font-weight: 700;
+  color: var(--blue);
+  margin-bottom: 1rem;
+  text-align: center;
+  background: linear-gradient(135deg, var(--blue) 0%, #1a4a8a 100%);
+  color: white;
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin-top: 0;
+}
+.vocab-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width:900px) {
+  .vocab-grid { grid-template-columns: 1fr; }
+}
+@media (min-width:1300px) {
+  .vocab-grid { grid-template-columns: 1fr 1fr 1fr; }
+}
+.vocab-word {
+  background: #fff;
+  border: 2.6px solid var(--red);
+  color: var(--blue);
+  font-weight: 600;
+  font-size: 1.07em;
+  padding: 13px 0;
+  border-radius: 10px;
+  box-shadow: 0 2px 9px var(--shadow);
+  cursor: grab;
+  text-align: center;
+  transition: border-color 0.14s, background 0.14s, color 0.14s;
+  user-select: none;
+}
+.vocab-dropzone {
+  background: #fff;
+  border: 2.6px solid var(--blue);
+  color: var(--blue);
+  font-weight: 600;
+  font-size: 1.07em;
+  padding: 13px 0;
+  border-radius: 10px;
+  box-shadow: 0 2px 9px var(--shadow);
+  text-align: center;
+  transition: border-color 0.14s, background 0.14s, color 0.14s;
+  min-height: 36px;
+  cursor: pointer;
+  user-select: none;
+}
+.vocab-dropzone.filled {
+  background: var(--red);
+  color: #fff;
+  border-color: var(--blue);
+}
+.vocab-dropzone.dragover {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.vocab-dropzone.incorrect {
+  background: #ffe0e0;
+  color: var(--red);
+  border-color: var(--red);
+  animation: shake 0.18s;
+}
+
+/* --- Reading Game --- */
+#readingSection .reading-flex-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 40px;
+  margin: 35px 0 0 0;
+}
+.reading-card {
+  background: #fff;
+  border-radius: 34px;
+  box-shadow: 0 3px 28px var(--shadow);
+  padding: 38px 48px 38px 48px;
+  max-width: 820px;
+  min-width: 360px;
+  width: 100%;
+}
+.reading-card h3 {
+  color: var(--red);
+  font-weight: 700;
+  margin: 0 0 15px 0;
+  font-size: 1.35em;
+}
+.reading-card h4 {
+  color: var(--blue);
+  margin-bottom: 8px;
+  margin-top: 28px;
+  font-size: 1.14em;
+  font-weight: 600;
+}
+.reading-card p {
+  margin: 0 0 17px 0;
+  line-height: 1.8;
+  font-size: 1.13em;
+  color: #23365b;
+}
+.gap {
+  display: inline-block;
+  min-width: 88px;
+  height: 30px;
+  background: #fff;
+  border: 2.6px dashed var(--red);
+  border-radius: 7px;
+  margin: 0 6px 3px 6px;
+  vertical-align: middle;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.04em;
+  color: var(--blue);
+  transition: all .12s;
+  outline: none;
+}
+.gap.filled {
+  background: var(--red);
+  color: #fff;
+  border-color: var(--blue);
+}
+.gap.dragover {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.gap.incorrect {
+  background: #ffe0e0;
+  color: var(--red);
+  border-color: var(--red);
+  animation: shake 0.18s;
+}
+.wordbank-box {
+  min-width: 160px;
+  max-width: 230px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 18px;
+}
+.word-bank-items {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+  width: 100%;
+  align-items: center;
+}
+@media (max-width: 800px) {
+  .word-bank-items { grid-template-columns: 1fr; }
+}
+.word-bank-item {
+  background: #fff;
+  border: 2.6px solid var(--blue);
+  color: var(--blue);
+  font-weight: 600;
+  font-size: 1.07em;
+  padding: 13px 0;
+  border-radius: 10px;
+  box-shadow: 0 2px 9px var(--shadow);
+  cursor: grab;
+  text-align: center;
+  transition: border-color 0.14s, background 0.14s, color 0.14s;
+  user-select: none;
+}
+.word-bank-item:active {
+  background: var(--blue);
+  color: #fff;
+}
+/* MODALS */
+#celebrationModal {
+  display: none;
+  position: fixed;
+  left: 0; top: 0; width: 100vw; height: 100vh;
+  background: rgba(16,32,75,0.93);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.8s;
+}
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+.celebration-box {
+  background: #fff;
+  border-radius: 38px;
+  box-shadow: 0 12px 40px var(--shadow);
+  padding: 56px 54px;
+  text-align: center;
+  min-width: 340px;
+  max-width: 96vw;
+  position: relative;
+  animation: popUp 0.7s;
+}
+@keyframes popUp {
+  0% {transform: scale(0.8);}
+  80% {transform: scale(1.06);}
+  100% {transform: scale(1);}
+}
+.celebration-box h2 {
+  font-size: 2.3em;
+  color: var(--red);
+  margin-bottom: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+.celebration-box h3 {
+  font-size: 1.23em;
+  color: var(--blue);
+  margin-bottom: 24px;
+}
+.celebration-box p {
+  font-size: 1.1em;
+  color: #333;
+  margin-bottom: 30px;
+}
+.celebration-btn {
+  font-size: 1.04em;
+  font-weight: 700;
+  padding: 10px 34px;
+  border-radius: 24px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  box-shadow: 0 2px 14px var(--shadow);
+  cursor: pointer;
+  transition: background 0.14s;
+}
+.celebration-btn:hover {
+  background: var(--red);
+}
+@media (max-width: 1200px) {
+  .vocab-game-area {gap: 2rem;}
+  #readingSection .reading-flex-wrap {gap: 16px;}
+  .reading-card {max-width: 96vw; min-width: 0; padding: 32px 4vw;}
+}
+@media (max-width: 900px) {
+  .vocab-game-area, #readingSection .reading-flex-wrap {
+      grid-template-columns: 1fr;
+      flex-direction: column;
+      gap: 1.3rem;
+  }
+  .vocab-section {margin-bottom: 12px;}
+  .reading-card {margin: 0 auto;}
+  .wordbank-box {flex-direction: row; flex-wrap: wrap; min-width: 0; max-width: none; gap: 7px;}
+}
+@media (max-width: 600px) {
+  .carousel-container { max-width: 98vw; padding: 10px 1vw; }
+  .carousel-image { height: 130px; }
+  .carousel-text { font-size: 1rem; min-height: 52px; }
+  .carousel-btn { width: 38px; height: 38px; font-size: 1.3rem; }
+  .vocab-grid, .word-bank-items {grid-template-columns: 1fr;}
+}
+@media (max-width: 700px) {
+  .header-bar {flex-direction: column; height: auto; gap: 0;}
+  .logo-header {position: static; margin: 0 auto 7px auto; left: 0; top: 0; transform: none;}
+  .logo-header img {margin: 0 auto; height: 32px;}
+  .main-title {padding: 5px 2vw; font-size: 1em; min-width: 0;}
+  #vocabSection .vocab-card, .reading-card {padding: 10px 2vw;}
+}
+::-webkit-scrollbar {width: 8px;}
+::-webkit-scrollbar-track {background: var(--gray); border-radius: 4px;}
+::-webkit-scrollbar-thumb {background: var(--blue); border-radius: 4px;}
+::-webkit-scrollbar-thumb:hover {background: var(--red);}
+@keyframes shake {
+  0%,100%{transform:translateX(0);}
+  25%{transform:translateX(-4px);}
+  75%{transform:translateX(4px);}
+}
+  </style>
+</head>
+<body>
+<!-- HEADER BAR -->
+<div class="header-bar">
+  <div class="logo-header">
+    <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" alt="Spring School Logo">
+  </div>
+  <span class="main-title">4th of July – Independence Day</span>
+</div>
+
+<!-- CAROUSEL SECTION -->
+<section id="carouselSection">
+  <div class="carousel-container">
+    <img class="carousel-image" id="carouselImage" src="" alt="4th of July Slide">
+    <div class="carousel-text" id="carouselText"></div>
+    <div class="carousel-nav">
+      <button class="carousel-btn" id="prevBtn" title="Previous">&#8592;</button>
+      <button class="carousel-btn" id="nextBtn" title="Next">&#8594;</button>
+    </div>
+    <div class="carousel-indicator" id="carouselIndicator"></div>
+  </div>
+</section>
+
+<!-- VOCABULARY GAME SECTION -->
+<section id="vocabSection" style="display:none;">
+  <div class="vocab-card">
+    <div class="score" id="vocabScore"></div>
+    <div class="vocab-game-area">
+      <div class="vocab-section">
+        <div class="section-title">English Words</div>
+        <div class="vocab-grid" id="vocabEnglishGrid"></div>
+      </div>
+      <div class="vocab-section">
+        <div class="section-title">Portuguese Translations</div>
+        <div class="vocab-grid" id="vocabPortGrid"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- READING GAME SECTION -->
+<section id="readingSection" style="display:none;">
+  <div class="reading-flex-wrap">
+    <div class="reading-card">
+      <h3>The 4th of July Story</h3>
+      <h4>What is the 4th of July?</h4>
+      <p>
+        The 4th of July is Independence Day in the United <span class="gap" data-answer="States"></span>.
+        It is a very important <span class="gap" data-answer="holiday"></span>.
+        On this day, Americans celebrate the adoption of the Declaration of <span class="gap" data-answer="Independence"></span> in 1776, when the 13 American <span class="gap" data-answer="colonies"></span> declared <span class="gap" data-answer="freedom"></span> from British rule.
+      </p>
+      <h4>How do people celebrate?</h4>
+      <p>
+        People have parades, picnics, and <span class="gap" data-answer="barbecues"></span>.
+        Many families wear red, <span class="gap" data-answer="white"></span>, and blue, the colors of the American <span class="gap" data-answer="flag"></span>.
+        Some cities have big <span class="gap" data-answer="firework"></span> shows, and others have concerts, ceremonies, or readings of the <span class="gap" data-answer="declaration"></span> of <span class="gap" data-answer="independence"></span>.
+      </p>
+      <div class="score" id="readingScore"></div>
+    </div>
+    <aside class="wordbank-box">
+      <div class="word-bank-items" id="wordBankItems"></div>
+    </aside>
+  </div>
+  <!-- Celebration Modal -->
+  <div class="celebration-bg" id="celebrationModal">
+    <div class="celebration-box">
+      <h2>🎉 Congratulations! 🎉</h2>
+      <h3>🇺🇸 Happy 4th of July! 🇺🇸</h3>
+      <p>You've completed the Reading Challenge!<br>Great job learning about Independence Day!</p>
+      <button class="celebration-btn" onclick="closeCelebration()">OK</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER NAV -->
+<footer>
+  <button class="footer-btn active" id="footerCarousel">Story</button>
+  <button class="footer-btn" id="footerVocab">Vocabulary</button>
+  <button class="footer-btn" id="footerReading">Reading</button>
+  <button class="footer-btn" id="footerReset">Reset</button>
+</footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // ==== TABS ====
+  const vocabSection = document.getElementById('vocabSection');
+  const readingSection = document.getElementById('readingSection');
+  const carouselSection = document.getElementById('carouselSection');
+  const vocabBtn = document.getElementById('footerVocab');
+  const readingBtn = document.getElementById('footerReading');
+  const carouselBtn = document.getElementById('footerCarousel');
+  const resetBtn = document.getElementById('footerReset');
+  const footerBtns = [carouselBtn, vocabBtn, readingBtn];
+
+  function showTab(tab) {
+    vocabSection.style.display = (tab === 'vocab') ? '' : 'none';
+    readingSection.style.display = (tab === 'reading') ? '' : 'none';
+    carouselSection.style.display = (tab === 'carousel') ? '' : 'none';
+    footerBtns.forEach(btn => btn.classList.remove('active'));
+    if(tab === 'vocab') {
+      vocabBtn.classList.add('active');
+      setupVocab();
+    } else if(tab === 'reading') {
+      readingBtn.classList.add('active');
+      setupReading();
+    } else {
+      carouselBtn.classList.add('active');
+      showSlide(currentSlide);
+    }
+  }
+  carouselBtn.onclick = () => showTab('carousel');
+  vocabBtn.onclick = () => showTab('vocab');
+  readingBtn.onclick = () => showTab('reading');
+  resetBtn.onclick = () => {
+    if(vocabSection.style.display !== 'none') setupVocab();
+    if(readingSection.style.display !== 'none') setupReading();
+    if(carouselSection.style.display !== 'none') showSlide(0);
+  };
+
+  // ==== CAROUSEL (Story) ====
+  const slides = [
+    {
+      text: "The 4th of July is Independence Day in the United <b>States</b>. It is a very important <b>holiday</b>.",
+      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTx-NzC1Lb3xGY07ut61FQlEjw4vuRzY0icXOD15CoRUYzntelfITCkiog&s=10"
+    },
+    {
+      text: "On this day, Americans celebrate the adoption of the Declaration of <b>Independence</b> in 1776, when the 13 American <b>colonies</b> declared <b>freedom</b> from British rule.",
+      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQg9AnSnr4sElWqrlan2IysOIGlM6sHPjhy7QE-omnKnrixZR8CV5HmZaXt&s=10"
+    },
+    {
+      text: "People have parades, picnics, and <b>barbecues</b>. Many families wear red, <b>white</b>, and blue, the colors of the American <b>flag</b>.",
+      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsTk8JO94iceWrF_PSxNTXqC2KlQmpswWlJbNmmuqnqWWyBy2Yeqp_3jg5&s=10"
+    },
+    {
+      text: "People have parades, picnics, and <b>barbecues</b>. Many families wear red, <b>white</b>, and blue, the colors of the American <b>flag</b>.",
+      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_qcvKW6sJLEXFuvj2ff8pqDzj11bF-wTdewEryUFNjjFhY5tYA9W44brq&s=10"
+    },
+    {
+      text: "Some cities have big <b>firework</b> shows, and others have concerts, ceremonies, or readings of the <b>declaration</b> of <b>independence</b>.",
+      image: "https://www.bayhealth.org/-/media/images/community-health-and-wellness/blog/2022/fourth-of-july-fireworks.jpg?h=438&iar=0&w=730&hash=5A851D1E84AA65BF56474D8935CCAA4A"
+    }
+  ];
+  let currentSlide = 0;
+  function showSlide(idx) {
+    currentSlide = idx;
+    const carouselImage = document.getElementById('carouselImage');
+    const carouselText = document.getElementById('carouselText');
+    const carouselIndicator = document.getElementById('carouselIndicator');
+    if(carouselImage && carouselText && carouselIndicator){
+      carouselImage.src = slides[idx].image;
+      carouselText.innerHTML = slides[idx].text;
+      carouselIndicator.textContent = `Slide ${idx + 1} of ${slides.length}`;
+    }
+  }
+  document.getElementById('prevBtn').onclick = () => {
+    currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+    showSlide(currentSlide);
+  };
+  document.getElementById('nextBtn').onclick = () => {
+    currentSlide = (currentSlide + 1) % slides.length;
+    showSlide(currentSlide);
+  };
+
+  // ==== VOCABULARY GAME ====
+  const vocabularyPairs = {
+    "Flag": "Bandeira",
+    "Fireworks": "Fogos de artifício",
+    "Parade": "Desfile",
+    "Stars": "Estrelas",
+    "Stripes": "Listras",
+    "Red": "Vermelho",
+    "White": "Branco",
+    "Blue": "Azul",
+    "Hamburger": "Hambúrguer",
+    "Picnic": "Piquenique",
+    "Family": "Família",
+    "Freedom": "Liberdade",
+    "Celebration": "Celebração",
+    "Music": "Música",
+    "Barbecue (BBQ)": "Churrasco"
+  };
+  let vocabDragged = null, vocabMatches = 0, vocabTotal = Object.keys(vocabularyPairs).length;
+  function setupVocab() {
+    vocabMatches = 0;
+    document.getElementById('vocabScore').textContent = '';
+    let englishWords = Object.keys(vocabularyPairs);
+    let portugueseWords = Object.values(vocabularyPairs);
+    shuffleArray(englishWords); shuffleArray(portugueseWords);
+    let englishGrid = document.getElementById('vocabEnglishGrid');
+    let portGrid = document.getElementById('vocabPortGrid');
+    englishGrid.innerHTML = '';
+    portGrid.innerHTML = '';
+    // English words
+    englishWords.forEach(word => {
+      let el = document.createElement('div');
+      el.className = 'vocab-word';
+      el.textContent = word;
+      el.draggable = true;
+      el.dataset.word = word;
+      el.addEventListener('dragstart', (e) => {
+        vocabDragged = el;
+        e.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => { el.style.opacity = '0.5'; }, 0);
+      });
+      el.addEventListener('dragend', () => { el.style.opacity = '1'; });
+      englishGrid.appendChild(el);
+    });
+    // Portuguese dropzones
+    portugueseWords.forEach(trans => {
+      let dz = document.createElement('div');
+      dz.className = 'vocab-dropzone';
+      dz.textContent = trans;
+      dz.dataset.translation = trans;
+      dz.addEventListener('dragover', (e) => {
+        e.preventDefault(); dz.classList.add('dragover');
+      });
+      dz.addEventListener('dragleave', () => {
+        dz.classList.remove('dragover');
+      });
+      dz.addEventListener('drop', function(e) {
+        e.preventDefault(); dz.classList.remove('dragover');
+        if (dz.classList.contains('filled')) return;
+        let correctWord = Object.keys(vocabularyPairs).find(k => vocabularyPairs[k] === trans);
+        if (vocabDragged && vocabDragged.dataset.word === correctWord) {
+          dz.classList.add('filled');
+          dz.innerHTML = `<strong>${vocabDragged.dataset.word}</strong><br>↓<br>${trans}`;
+          vocabDragged.style.display = "none";
+          vocabMatches++;
+          updateVocabScore();
+          if (vocabMatches === vocabTotal) setTimeout(() => {
+            showCelebrationVocab();
+          }, 400);
+        } else {
+          dz.classList.add('incorrect');
+          setTimeout(() => dz.classList.remove('incorrect'), 520);
+        }
+      });
+      portGrid.appendChild(dz);
+    });
+  }
+  function updateVocabScore() {
+    const percentage = Math.round((vocabMatches / vocabTotal) * 100);
+    document.getElementById('vocabScore').textContent =
+      `Score: ${vocabMatches} / ${vocabTotal} matched (${percentage}%)`;
+  }
+  function showCelebrationVocab() {
+    alert('🎉 Congratulations! You matched all the words! 🎆');
+  }
+  function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
+
+  // ==== READING GAME ====
+  const readingWords = [
+    "States", "holiday", "Independence", "colonies", "freedom",
+    "barbecues", "white", "flag", "firework", "declaration", "independence"
+  ];
+  let readingDragged = null, readingMatches = 0, readingTotal = readingWords.length;
+  function setupReading() {
+    readingMatches = 0;
+    document.getElementById('readingScore').textContent = '';
+    document.querySelectorAll('#readingSection .gap').forEach(gap => {
+      gap.textContent = '';
+      gap.className = 'gap';
+      gap.addEventListener('dragover', handleReadingDragOver);
+      gap.addEventListener('drop', handleReadingDrop);
+      gap.addEventListener('dragleave', handleReadingDragLeave);
+    });
+    // Bank
+    const bank = document.getElementById('wordBankItems');
+    bank.innerHTML = '';
+    let words = [...readingWords]; shuffleArray(words);
+    words.forEach(word => {
+      let el = document.createElement('div');
+      el.className = 'word-bank-item';
+      el.textContent = word;
+      el.draggable = true;
+      el.dataset.word = word;
+      el.addEventListener('dragstart', (e) => {
+        readingDragged = el;
+        setTimeout(() => el.style.visibility = "hidden", 1);
+      });
+      el.addEventListener('dragend', () => {
+        el.style.visibility = "visible";
+      });
+      bank.appendChild(el);
+    });
+  }
+  function handleReadingDragOver(e) {
+    e.preventDefault(); this.classList.add('dragover');
+  }
+  function handleReadingDragLeave(e) {
+    this.classList.remove('dragover');
+  }
+  function handleReadingDrop(e) {
+    e.preventDefault(); this.classList.remove('dragover');
+    if (this.classList.contains('filled')) return;
+    const draggedWord = readingDragged.dataset.word;
+    const correctAnswer = this.dataset.answer;
+    if (draggedWord.toLowerCase() === correctAnswer.toLowerCase()) {
+      this.classList.add('filled');
+      this.textContent = draggedWord;
+      readingDragged.style.display = 'none';
+      readingMatches++;
+      updateReadingScore();
+      if (readingMatches === readingTotal) setTimeout(showCelebrationReading, 450);
+    } else {
+      this.classList.add('incorrect');
+      setTimeout(() => this.classList.remove('incorrect'), 440);
+    }
+  }
+  function updateReadingScore() {
+    document.getElementById('readingScore').textContent = `Score: ${readingMatches} / ${readingTotal} gaps filled!`;
+  }
+  function showCelebrationReading() {
+    document.getElementById('celebrationModal').style.display = 'flex';
+  }
+  window.closeCelebration = function() {
+    document.getElementById('celebrationModal').style.display = 'none';
+    setupReading();
+  };
+
+  // ==== INITIAL LOAD ====
+  showTab('carousel');
+});
+</script>
+</body>
+</html>
