@@ -27,8 +27,7 @@
     footer button { background: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
     #homeView, #databaseView { display: none; }
     #homeView.active, #databaseView.active { display: block; }
-
-    /* ---- NOVO LAYOUT MENU EDIT ---- */
+    /* Novo Layout Card Editável */
     #editArea {
       display: flex;
       justify-content: center;
@@ -70,6 +69,23 @@
       margin-top: 0.2rem;
       color: #356ea5;
     }
+    .btn-actions {
+      display: flex;
+      gap: 1.1rem;
+      margin-top: 1.3rem;
+    }
+    .btn-actions button {
+      padding: 0.5rem 1.3rem;
+      font-size: 1.02rem;
+      border-radius: 7px;
+      font-weight: bold;
+      border: none;
+      background: #4a90e2;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .btn-actions button:active { background: #306699; }
     .preview-card {
       align-items: center;
       justify-content: flex-start;
@@ -117,24 +133,26 @@
       box-shadow: 0 2px 6px #0001;
     }
     .preview-link:active { box-shadow: none; }
-    .btn-bar {
-      margin: 1.2rem 2rem 0.2rem 2rem;
-      display: flex;
-      gap: 1.5rem;
-      flex-wrap: wrap;
-    }
-    .btn-bar button {
-      padding: 0.6rem 1.4rem;
-      font-size: 1.06rem;
-      border-radius: 7px;
-      font-weight: bold;
-    }
     #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 1rem 2rem; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.5s; z-index: 2000; }
     #toast.show { display: block; opacity: 1; }
     @media (max-width: 900px) {
       #editArea { flex-direction: column; align-items: stretch; }
       .edit-card, .preview-card { max-width: 100%; min-width: unset; }
     }
+    /* Footer extra botão */
+    #footer-create {
+      background: #e0e0e0;
+      color: #205c9c;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      margin-left: 1.5rem;
+      padding: 0.5rem 1.3rem;
+      font-size: 1.05rem;
+      cursor: pointer;
+      transition: background .12s;
+    }
+    #footer-create:active { background: #d5e6f7; }
   </style>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -158,17 +176,13 @@
 </main>
 
 <main id="databaseView">
-  <div class="btn-bar">
-    <button onclick="addEditCard()">➕ Add Game</button>
-    <button onclick="saveAllEdits()">💾 Save All</button>
-    <button onclick="previewAllEdits()">Preview</button>
-  </div>
   <div id="editArea"></div>
 </main>
 
 <footer>
   <button onclick="switchView('home')">🏠 Home</button>
   <button onclick="switchView('database')">📁 Banco de Dados</button>
+  <button id="footer-create" onclick="showEditCard()">Create New</button>
 </footer>
 <div id="toast">💾 Jogos salvos com sucesso!</div>
 
@@ -219,7 +233,7 @@
     document.getElementById('homeView').classList.remove('active');
     document.getElementById('databaseView').classList.remove('active');
     document.getElementById(view + 'View').classList.add('active');
-    if(view === 'database') showEditCards();
+    if(view === 'database') showEditCard();
   }
 
   function showToast(msg) {
@@ -229,51 +243,47 @@
     setTimeout(() => toast.classList.remove('show'), 3000);
   }
 
-  // ----------- EDIT MODE (NOVO LAYOUT) -----------
-  function showEditCards() {
+  // ----------- EDIT MODE: APENAS 1 CARD -----------
+  function showEditCard() {
     const editArea = document.getElementById('editArea');
     editArea.innerHTML = '';
-    if (!allGames.length) addEditCard();
-    else allGames.forEach((game, idx) => addEditCard(game, idx));
-  }
 
-  function addEditCard(data = {}, idx = null) {
-    const editArea = document.getElementById('editArea');
     // Card de edição à esquerda
     const editCard = document.createElement('div');
     editCard.className = 'edit-card';
     editCard.innerHTML = `
       <label>Game Name
-        <input type="text" class="input-nome" placeholder="Game Name" value="${data.nome||''}">
+        <input type="text" class="input-nome" placeholder="Game Name">
       </label>
       <label>Description
-        <textarea class="input-desc" placeholder="Description" rows="5">${data.descricao||''}</textarea>
+        <textarea class="input-desc" placeholder="Description" rows="5"></textarea>
       </label>
       <label>Tags (comma-separated)
-        <input type="text" class="input-tags" placeholder="Tags (comma-separated)" value="${data.tags||''}">
+        <input type="text" class="input-tags" placeholder="Tags (comma-separated)">
       </label>
       <label>URL
-        <input type="text" class="input-link" placeholder="URL" value="${data.link||''}">
+        <input type="text" class="input-link" placeholder="URL">
       </label>
       <label>Type
-        <input type="text" class="input-tipo" placeholder="Type" value="${data.tipo||''}">
+        <input type="text" class="input-tipo" placeholder="Type">
       </label>
+      <div class="btn-actions">
+        <button type="button" onclick="updatePreview(this)">Preview</button>
+        <button type="button" onclick="addGame(this)">Add</button>
+      </div>
     `;
 
     // Card de preview à direita
     const previewCard = document.createElement('div');
     previewCard.className = 'preview-card';
-    const tagsArr = typeof data.tags === "string" ? data.tags.split(',').map(t=>t.trim()).filter(Boolean) : [];
     previewCard.innerHTML = `
-      <div class="preview-title">${data.nome||'Game Name'}</div>
-      <div class="preview-desc">${data.descricao||'Description'}</div>
-      <div class="preview-tags">
-        ${tagsArr.map(tag => `<span class="preview-tag">${tag}</span>`).join('')}
-      </div>
-      <a class="preview-link" href="${data.link||'#'}" target="_blank">${getLabelForLink(data.link)}</a>
+      <div class="preview-title">Game Name</div>
+      <div class="preview-desc">Description</div>
+      <div class="preview-tags"></div>
+      <a class="preview-link" href="#" target="_blank">Play</a>
     `;
 
-    // Sincroniza preview ao digitar
+    // Sincroniza preview ao digitar (dinâmico)
     editCard.querySelector('.input-nome').addEventListener('input', e => {
       previewCard.querySelector('.preview-title').textContent = e.target.value || 'Game Name';
     });
@@ -299,7 +309,7 @@
     container.appendChild(editCard);
     container.appendChild(previewCard);
 
-    // Permite múltiplos cartões de edição se vários jogos forem carregados
+    // Adiciona ao editArea
     editArea.appendChild(container);
   }
 
@@ -308,32 +318,46 @@
     return /\.(pdf|zip|docx?|xlsx?|pptx?|mp3|mp4)$/i.test(link) ? 'Download' : 'Play';
   }
 
-  // Salva todos os cartões de edição no Firebase
-  function saveAllEdits() {
-    const editArea = document.getElementById('editArea');
-    const containers = Array.from(editArea.children);
-    let hasValid = false;
-    containers.forEach(container => {
-      const editCard = container.querySelector('.edit-card');
-      const nome = editCard.querySelector('.input-nome').value.trim();
-      const descricao = editCard.querySelector('.input-desc').value.trim();
-      const tags = editCard.querySelector('.input-tags').value.trim();
-      const link = editCard.querySelector('.input-link').value.trim();
-      const tipo = editCard.querySelector('.input-tipo').value.trim();
-      if (!nome || !link) return;
-      hasValid = true;
-      db.collection('games').doc().set({nome, descricao, tags, link, tipo}).then(loadFromFirebase);
-    });
-    if (hasValid) showToast('💾 Jogos salvos com sucesso!');
-    else showToast('⚠️ Preencha nome e link!');
+  // Preview button: só atualiza os campos do preview (mas já é dinâmico)
+  function updatePreview(btn) {
+    // Não faz nada pois já está sincronizado, mas pode mostrar toast
+    showToast('👀 Preview atualizado!');
   }
 
-  // Exibe um preview rápido de todos os cartões (pode ser expandido futuramente)
-  function previewAllEdits() {
-    showToast('👀 Preview dinâmico já aparece ao lado dos campos!');
-    // No futuro pode mostrar todos os cartões já salvos de forma centralizada
+  // Botão Add: salva no Firebase e limpa os campos!
+  function addGame(btn) {
+    const editCard = btn.closest('.edit-card');
+    const nome = editCard.querySelector('.input-nome').value.trim();
+    const descricao = editCard.querySelector('.input-desc').value.trim();
+    const tags = editCard.querySelector('.input-tags').value.trim();
+    const link = editCard.querySelector('.input-link').value.trim();
+    const tipo = editCard.querySelector('.input-tipo').value.trim();
+    if (!nome || !link) {
+      showToast('⚠️ Preencha nome e link!');
+      return;
+    }
+    db.collection('games').doc().set({nome, descricao, tags, link, tipo})
+      .then(() => {
+        showToast('✅ Jogo adicionado com sucesso!');
+        // Limpa todos os campos do card editável
+        editCard.querySelector('.input-nome').value = '';
+        editCard.querySelector('.input-desc').value = '';
+        editCard.querySelector('.input-tags').value = '';
+        editCard.querySelector('.input-link').value = '';
+        editCard.querySelector('.input-tipo').value = '';
+        // Limpa preview também
+        const editArea = document.getElementById('editArea');
+        const previewCard = editArea.querySelector('.preview-card');
+        previewCard.querySelector('.preview-title').textContent = 'Game Name';
+        previewCard.querySelector('.preview-desc').textContent = 'Description';
+        previewCard.querySelector('.preview-tags').innerHTML = '';
+        previewCard.querySelector('.preview-link').href = '#';
+        previewCard.querySelector('.preview-link').textContent = 'Play';
+        loadFromFirebase(); // atualiza home
+      });
   }
 
+  // ---- RESTANTE DA HOME E TAGS (INALTERADO) ----
   function renderCard(g) {
     const card = document.createElement('div');
     card.className = 'card';
@@ -407,8 +431,6 @@
       document.getElementById('homeGrid').innerHTML = '';
       allGames.forEach(renderCard);
       renderTagFilters();
-      // Se estiver no modo edit/database, recarrega cartões de edição
-      if(document.getElementById('databaseView').classList.contains('active')) showEditCards();
     });
   }
 </script>
