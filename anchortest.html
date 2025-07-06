@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>S.T.A.G.E</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5faff; margin: 0; padding: 0 0 60px 0; }
+    header { background: #4a90e2; color: white; padding: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
+    header img { height: 50px; }
+    .header-title { display: flex; flex-direction: column; }
+    h1 { font-size: 2rem; margin: 0; }
+    .subtitle { font-size: 0.9rem; font-style: italic; margin-top: 0.2rem; }
+    .login-btn { background: white; color: #4a90e2; font-weight: bold; padding: 0.4rem 1rem; border-radius: 6px; cursor: pointer; border: none; }
+    #tagFilters { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 1rem 2rem 0; }
+    .filter-tag { background: #e0e0e0; border: none; border-radius: 6px; padding: 0.4rem 0.8rem; cursor: pointer; font-size: 0.85rem; }
+    .filter-tag.active { background: #4a90e2; color: white; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; padding: 2rem; max-width: 1200px; margin: 0 auto; }
+    .card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 1.5rem; text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
+    .card h2 { margin: 0.5rem 0; font-size: 1.2rem; }
+    .card p { font-size: 0.95rem; color: #555; }
+    .tag-container { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin-top: 0.5rem; }
+    .tag { font-size: 0.75rem; color: #fff; background: #4a90e2; padding: 0.25rem 0.5rem; border-radius: 6px; }
+    .card a { display: inline-block; background: #ffc107; color: #000; text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; margin-top: 0.5rem; }
+    footer { position: fixed; bottom: 0; left: 0; right: 0; background: #4a90e2; display: flex; justify-content: center; gap: 2rem; padding: 0.75rem 0; z-index: 1000; }
+    footer button { background: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    #homeView, #databaseView { display: none; }
+    #homeView.active, #databaseView.active { display: block; }
+
+    /* ---- NOVO LAYOUT MENU EDIT ---- */
+    #editArea {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 2rem;
+      padding: 2rem 0;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .edit-card, .preview-card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.09);
+      padding: 2rem 1.5rem 1.5rem 1.5rem;
+      min-width: 340px;
+      max-width: 400px;
+      min-height: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .edit-card input[type="text"], .edit-card textarea {
+      width: 100%;
+      font-size: 1rem;
+      border-radius: 7px;
+      border: 1px solid #c9c9c9;
+      padding: 0.7rem;
+      margin-bottom: 0.2rem;
+      box-sizing: border-box;
+    }
+    .edit-card textarea {
+      min-height: 90px;
+      max-width: 100%;
+      resize: vertical;
+    }
+    .edit-card label {
+      font-weight: bold;
+      font-size: 0.99rem;
+      margin-top: 0.2rem;
+      color: #356ea5;
+    }
+    .preview-card {
+      align-items: center;
+      justify-content: flex-start;
+      text-align: center;
+    }
+    .preview-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+      color: #222;
+    }
+    .preview-desc {
+      font-size: 1.01rem;
+      color: #444;
+      margin-bottom: 0.6rem;
+      min-height: 52px;
+    }
+    .preview-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      justify-content: center;
+      margin-bottom: 0.7rem;
+    }
+    .preview-tag {
+      background: #4a90e2;
+      color: #fff;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      padding: 0.22rem 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+    .preview-link {
+      display: inline-block;
+      background: #ffc107;
+      color: #000;
+      text-decoration: none;
+      padding: 0.7rem 2rem;
+      border-radius: 7px;
+      font-weight: bold;
+      margin-top: 0.6rem;
+      font-size: 1.08rem;
+      transition: box-shadow .1s;
+      box-shadow: 0 2px 6px #0001;
+    }
+    .preview-link:active { box-shadow: none; }
+    .btn-bar {
+      margin: 1.2rem 2rem 0.2rem 2rem;
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .btn-bar button {
+      padding: 0.6rem 1.4rem;
+      font-size: 1.06rem;
+      border-radius: 7px;
+      font-weight: bold;
+    }
+    #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 1rem 2rem; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.5s; z-index: 2000; }
+    #toast.show { display: block; opacity: 1; }
+    @media (max-width: 900px) {
+      #editArea { flex-direction: column; align-items: stretch; }
+      .edit-card, .preview-card { max-width: 100%; min-width: unset; }
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" alt="Spring School Logo"/>
+    <div class="header-title">
+      <h1>S.T.A.G.E</h1>
+      <div class="subtitle">Spring Teacher's Activity & Guidance Engine</div>
+    </div>
+  </div>
+  <button class="login-btn" onclick="handleLogin()">Login</button>
+</header>
+
+<main id="homeView" class="active">
+  <div id="tagFilters"></div>
+  <div class="grid" id="homeGrid"></div>
+</main>
+
+<main id="databaseView">
+  <div class="btn-bar">
+    <button onclick="addEditCard()">➕ Add Game</button>
+    <button onclick="saveAllEdits()">💾 Save All</button>
+    <button onclick="previewAllEdits()">Preview</button>
+  </div>
+  <div id="editArea"></div>
+</main>
+
+<footer>
+  <button onclick="switchView('home')">🏠 Home</button>
+  <button onclick="switchView('database')">📁 Banco de Dados</button>
+</footer>
+<div id="toast">💾 Jogos salvos com sucesso!</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAsYg7ZTHXD_a6d_icFLw9e5y0jSTfXBi0",
+    authDomain: "spring-stage-by-leo.firebaseapp.com",
+    projectId: "spring-stage-by-leo",
+    storageBucket: "spring-stage-by-leo.firebasestorage.app",
+    messagingSenderId: "215839443924",
+    appId: "1:215839443924:web:16a9fae4a0a5da76f16441",
+    measurementId: "G-JEE5SLV9YP"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  let allGames = [];
+  let selectedTags = [];
+  let userLogged = false;
+
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      document.querySelector('.login-btn').textContent = user.displayName;
+      document.querySelector('.login-btn').disabled = true;
+      userLogged = true;
+      loadFromFirebase();
+    }
+  });
+
+  function handleLogin() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider)
+      .then(result => {
+        document.querySelector('.login-btn').textContent = result.user.displayName;
+        document.querySelector('.login-btn').disabled = true;
+        userLogged = true;
+        loadFromFirebase();
+      })
+      .catch(error => console.error('Erro no login:', error));
+  }
+
+  function switchView(view) {
+    if (view === 'database' && !userLogged) {
+      showToast("⚠️ Faça login para acessar o banco de dados.");
+      return;
+    }
+    document.getElementById('homeView').classList.remove('active');
+    document.getElementById('databaseView').classList.remove('active');
+    document.getElementById(view + 'View').classList.add('active');
+    if(view === 'database') showEditCards();
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // ----------- EDIT MODE (NOVO LAYOUT) -----------
+  function showEditCards() {
+    const editArea = document.getElementById('editArea');
+    editArea.innerHTML = '';
+    if (!allGames.length) addEditCard();
+    else allGames.forEach((game, idx) => addEditCard(game, idx));
+  }
+
+  function addEditCard(data = {}, idx = null) {
+    const editArea = document.getElementById('editArea');
+    // Card de edição à esquerda
+    const editCard = document.createElement('div');
+    editCard.className = 'edit-card';
+    editCard.innerHTML = `
+      <label>Game Name
+        <input type="text" class="input-nome" placeholder="Game Name" value="${data.nome||''}">
+      </label>
+      <label>Description
+        <textarea class="input-desc" placeholder="Description" rows="5">${data.descricao||''}</textarea>
+      </label>
+      <label>Tags (comma-separated)
+        <input type="text" class="input-tags" placeholder="Tags (comma-separated)" value="${data.tags||''}">
+      </label>
+      <label>URL
+        <input type="text" class="input-link" placeholder="URL" value="${data.link||''}">
+      </label>
+      <label>Type
+        <input type="text" class="input-tipo" placeholder="Type" value="${data.tipo||''}">
+      </label>
+    `;
+
+    // Card de preview à direita
+    const previewCard = document.createElement('div');
+    previewCard.className = 'preview-card';
+    const tagsArr = typeof data.tags === "string" ? data.tags.split(',').map(t=>t.trim()).filter(Boolean) : [];
+    previewCard.innerHTML = `
+      <div class="preview-title">${data.nome||'Game Name'}</div>
+      <div class="preview-desc">${data.descricao||'Description'}</div>
+      <div class="preview-tags">
+        ${tagsArr.map(tag => `<span class="preview-tag">${tag}</span>`).join('')}
+      </div>
+      <a class="preview-link" href="${data.link||'#'}" target="_blank">${getLabelForLink(data.link)}</a>
+    `;
+
+    // Sincroniza preview ao digitar
+    editCard.querySelector('.input-nome').addEventListener('input', e => {
+      previewCard.querySelector('.preview-title').textContent = e.target.value || 'Game Name';
+    });
+    editCard.querySelector('.input-desc').addEventListener('input', e => {
+      previewCard.querySelector('.preview-desc').textContent = e.target.value || 'Description';
+    });
+    editCard.querySelector('.input-tags').addEventListener('input', e => {
+      const val = e.target.value;
+      const arr = val.split(',').map(t=>t.trim()).filter(Boolean);
+      previewCard.querySelector('.preview-tags').innerHTML = arr.map(tag=>`<span class="preview-tag">${tag}</span>`).join('');
+    });
+    editCard.querySelector('.input-link').addEventListener('input', e => {
+      const val = e.target.value;
+      const a = previewCard.querySelector('.preview-link');
+      a.href = val || '#';
+      a.textContent = getLabelForLink(val);
+    });
+
+    // Container com os dois cartões lado a lado
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.gap = '2rem';
+    container.appendChild(editCard);
+    container.appendChild(previewCard);
+
+    // Permite múltiplos cartões de edição se vários jogos forem carregados
+    editArea.appendChild(container);
+  }
+
+  function getLabelForLink(link) {
+    if (!link) return 'Play';
+    return /\.(pdf|zip|docx?|xlsx?|pptx?|mp3|mp4)$/i.test(link) ? 'Download' : 'Play';
+  }
+
+  // Salva todos os cartões de edição no Firebase
+  function saveAllEdits() {
+    const editArea = document.getElementById('editArea');
+    const containers = Array.from(editArea.children);
+    let hasValid = false;
+    containers.forEach(container => {
+      const editCard = container.querySelector('.edit-card');
+      const nome = editCard.querySelector('.input-nome').value.trim();
+      const descricao = editCard.querySelector('.input-desc').value.trim();
+      const tags = editCard.querySelector('.input-tags').value.trim();
+      const link = editCard.querySelector('.input-link').value.trim();
+      const tipo = editCard.querySelector('.input-tipo').value.trim();
+      if (!nome || !link) return;
+      hasValid = true;
+      db.collection('games').doc().set({nome, descricao, tags, link, tipo}).then(loadFromFirebase);
+    });
+    if (hasValid) showToast('💾 Jogos salvos com sucesso!');
+    else showToast('⚠️ Preencha nome e link!');
+  }
+
+  // Exibe um preview rápido de todos os cartões (pode ser expandido futuramente)
+  function previewAllEdits() {
+    showToast('👀 Preview dinâmico já aparece ao lado dos campos!');
+    // No futuro pode mostrar todos os cartões já salvos de forma centralizada
+  }
+
+  function renderCard(g) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const isArquivo = g.link && /\.(pdf|zip|docx?|xlsx?|pptx?|mp3|mp4)$/i.test(g.link);
+    const label = isArquivo ? 'Download' : 'Play';
+    const a = document.createElement('a');
+    a.href = g.link;
+    a.textContent = label;
+    a.target = '_blank';
+    if (isArquivo) a.setAttribute('download', '');
+
+    const tagsArray = Array.isArray(g.tags)
+      ? g.tags
+      : g.tags.split(',').map(t => t.trim().toLowerCase());
+
+    const tagContainer = document.createElement('div');
+    tagContainer.className = 'tag-container';
+    tagsArray.forEach(tag => {
+      const tagDiv = document.createElement('div');
+      tagDiv.className = 'tag';
+      tagDiv.textContent = tag;
+      tagContainer.appendChild(tagDiv);
+    });
+
+    card.innerHTML = `
+      <h2>${g.nome}</h2>
+      <p>${g.descricao}</p>
+    `;
+    card.appendChild(tagContainer);
+    card.appendChild(a);
+    document.getElementById('homeGrid').appendChild(card);
+  }
+
+  function renderTagFilters() {
+    const container = document.getElementById('tagFilters');
+    container.innerHTML = '';
+    const tags = [...new Set(allGames.flatMap(g => (Array.isArray(g.tags) ? g.tags : g.tags.split(',').map(t => t.trim().toLowerCase()))))];
+    tags.forEach(tag => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-tag';
+      btn.textContent = tag;
+      btn.onclick = () => toggleTag(tag, btn);
+      container.appendChild(btn);
+    });
+  }
+
+  function toggleTag(tag, button) {
+    button.classList.toggle('active');
+    if (selectedTags.includes(tag)) {
+      selectedTags = selectedTags.filter(t => t !== tag);
+    } else {
+      selectedTags.push(tag);
+    }
+    filterCards();
+  }
+
+  function filterCards() {
+    const filtered = selectedTags.length === 0
+      ? allGames
+      : allGames.filter(g => {
+          const tags = Array.isArray(g.tags) ? g.tags : g.tags.split(',').map(t => t.trim().toLowerCase());
+          return selectedTags.every(tag => tags.includes(tag));
+        });
+    document.getElementById('homeGrid').innerHTML = '';
+    filtered.forEach(renderCard);
+  }
+
+  function loadFromFirebase() {
+    db.collection("games").get().then(snapshot => {
+      allGames = snapshot.docs.map(doc => doc.data());
+      document.getElementById('homeGrid').innerHTML = '';
+      allGames.forEach(renderCard);
+      renderTagFilters();
+      // Se estiver no modo edit/database, recarrega cartões de edição
+      if(document.getElementById('databaseView').classList.contains('active')) showEditCards();
+    });
+  }
+</script>
+</body>
+</html>
