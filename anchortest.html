@@ -25,9 +25,8 @@
     .card a { display: inline-block; background: #ffc107; color: #000; text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; margin-top: 0.5rem; }
     footer { position: fixed; bottom: 0; left: 0; right: 0; background: #4a90e2; display: flex; justify-content: center; gap: 2rem; padding: 0.75rem 0; z-index: 1000; }
     footer button { background: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    #homeView, #databaseView { display: none; }
-    #homeView.active, #databaseView.active { display: block; }
-    /* Novo Layout Card Editável */
+    #homeView, #addNewView { display: none; }
+    #homeView.active, #addNewView.active { display: block; }
     #editArea {
       display: flex;
       justify-content: center;
@@ -63,16 +62,11 @@
       max-width: 100%;
       resize: vertical;
     }
-    .edit-card label {
-      font-weight: bold;
-      font-size: 0.99rem;
-      margin-top: 0.2rem;
-      color: #356ea5;
-    }
     .btn-actions {
       display: flex;
       gap: 1.1rem;
       margin-top: 1.3rem;
+      justify-content: flex-end;
     }
     .btn-actions button {
       padding: 0.5rem 1.3rem;
@@ -139,20 +133,6 @@
       #editArea { flex-direction: column; align-items: stretch; }
       .edit-card, .preview-card { max-width: 100%; min-width: unset; }
     }
-    /* Footer extra botão */
-    #footer-create {
-      background: #e0e0e0;
-      color: #205c9c;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      margin-left: 1.5rem;
-      padding: 0.5rem 1.3rem;
-      font-size: 1.05rem;
-      cursor: pointer;
-      transition: background .12s;
-    }
-    #footer-create:active { background: #d5e6f7; }
   </style>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -175,14 +155,13 @@
   <div class="grid" id="homeGrid"></div>
 </main>
 
-<main id="databaseView">
+<main id="addNewView">
   <div id="editArea"></div>
 </main>
 
 <footer>
   <button onclick="switchView('home')">🏠 Home</button>
-  <button onclick="switchView('database')">📁 Banco de Dados</button>
-  <button id="footer-create" onclick="showEditCard()">Create New</button>
+  <button onclick="switchView('addNew')">➕ Add New</button>
 </footer>
 <div id="toast">💾 Jogos salvos com sucesso!</div>
 
@@ -226,14 +205,14 @@
   }
 
   function switchView(view) {
-    if (view === 'database' && !userLogged) {
-      showToast("⚠️ Faça login para acessar o banco de dados.");
+    if (view === 'addNew' && !userLogged) {
+      showToast("⚠️ Faça login para acessar o cadastro.");
       return;
     }
     document.getElementById('homeView').classList.remove('active');
-    document.getElementById('databaseView').classList.remove('active');
+    document.getElementById('addNewView').classList.remove('active');
     document.getElementById(view + 'View').classList.add('active');
-    if(view === 'database') showEditCard();
+    if(view === 'addNew') showEditCard();
   }
 
   function showToast(msg) {
@@ -248,27 +227,15 @@
     const editArea = document.getElementById('editArea');
     editArea.innerHTML = '';
 
-    // Card de edição à esquerda
+    // Card de edição à esquerda (sem labels, só placeholders)
     const editCard = document.createElement('div');
     editCard.className = 'edit-card';
     editCard.innerHTML = `
-      <label>Game Name
-        <input type="text" class="input-nome" placeholder="Game Name">
-      </label>
-      <label>Description
-        <textarea class="input-desc" placeholder="Description" rows="5"></textarea>
-      </label>
-      <label>Tags (comma-separated)
-        <input type="text" class="input-tags" placeholder="Tags (comma-separated)">
-      </label>
-      <label>URL
-        <input type="text" class="input-link" placeholder="URL">
-      </label>
-      <label>Type
-        <input type="text" class="input-tipo" placeholder="Type">
-      </label>
+      <input type="text" class="input-nome" placeholder="Game Name">
+      <textarea class="input-desc" placeholder="Description" rows="5"></textarea>
+      <input type="text" class="input-tags" placeholder="Tags (comma-separated)">
+      <input type="text" class="input-link" placeholder="URL">
       <div class="btn-actions">
-        <button type="button" onclick="updatePreview(this)">Preview</button>
         <button type="button" onclick="addGame(this)">Add</button>
       </div>
     `;
@@ -318,12 +285,6 @@
     return /\.(pdf|zip|docx?|xlsx?|pptx?|mp3|mp4)$/i.test(link) ? 'Download' : 'Play';
   }
 
-  // Preview button: só atualiza os campos do preview (mas já é dinâmico)
-  function updatePreview(btn) {
-    // Não faz nada pois já está sincronizado, mas pode mostrar toast
-    showToast('👀 Preview atualizado!');
-  }
-
   // Botão Add: salva no Firebase e limpa os campos!
   function addGame(btn) {
     const editCard = btn.closest('.edit-card');
@@ -331,12 +292,11 @@
     const descricao = editCard.querySelector('.input-desc').value.trim();
     const tags = editCard.querySelector('.input-tags').value.trim();
     const link = editCard.querySelector('.input-link').value.trim();
-    const tipo = editCard.querySelector('.input-tipo').value.trim();
     if (!nome || !link) {
       showToast('⚠️ Preencha nome e link!');
       return;
     }
-    db.collection('games').doc().set({nome, descricao, tags, link, tipo})
+    db.collection('games').doc().set({nome, descricao, tags, link})
       .then(() => {
         showToast('✅ Jogo adicionado com sucesso!');
         // Limpa todos os campos do card editável
@@ -344,7 +304,6 @@
         editCard.querySelector('.input-desc').value = '';
         editCard.querySelector('.input-tags').value = '';
         editCard.querySelector('.input-link').value = '';
-        editCard.querySelector('.input-tipo').value = '';
         // Limpa preview também
         const editArea = document.getElementById('editArea');
         const previewCard = editArea.querySelector('.preview-card');
@@ -436,3 +395,4 @@
 </script>
 </body>
 </html>
+
