@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Voice Vocabulary Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef7ff;
+      margin: 0;
+      padding: 1rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    h1 {
+      color: #2a6cc0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      max-width: 600px;
+      margin: 20px auto;
+    }
+    .word-btn {
+      background-color: #ffffff;
+      border: 2px solid #2a6cc0;
+      border-radius: 10px;
+      padding: 20px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    .word-btn.correct {
+      background-color: #8ef58f;
+      transform: scale(1.1);
+    }
+    .controls {
+      margin-bottom: 10px;
+    }
+    button {
+      margin: 4px;
+      padding: 8px 14px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+    #micBtn { background-color: #2a6cc0; color: white; }
+    #micBtn.active { background-color: #4caf50; }
+    #stopBtn { background-color: #d9534f; color: white; }
+    #editToggle { background-color: #777; color: white; }
+    #reverseToggle { background-color: #f0ad4e; color: white; }
+    #exportBtn { background-color: #5bc0de; color: white; }
+    #importToggle { background-color: #6f42c1; color: white; }
+
+    #message {
+      margin-top: 20px;
+      font-size: 1.4rem;
+      color: #4caf50;
+    }
+
+    input.word-edit {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    #footerBar {
+      background: #dbe9ff;
+      color: #333;
+      padding: 10px;
+      font-size: 1rem;
+      border-top: 2px solid #2a6cc0;
+      margin-top: auto;
+    }
+
+    #importArea {
+      margin: 10px auto;
+      max-width: 500px;
+      display: none;
+    }
+
+    #importArea textarea {
+      width: 100%;
+      height: 150px;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #aaa;
+    }
+
+    #importArea button {
+      margin-top: 10px;
+      background: #4a90e2;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎤 Voice Vocabulary Game</h1>
+  <div class="controls">
+    <button id="micBtn">🎙️ Start Listening</button>
+    <button id="stopBtn">🛑 Stop</button>
+    <button id="editToggle">✏️ Edit Mode</button>
+    <button id="reverseToggle">🔁 Reverse Mode: OFF</button>
+    <button id="exportBtn">📄 Export Words</button>
+    <button id="importToggle">📥 Import Words</button>
+  </div>
+
+  <div id="importArea">
+    <textarea id="importText" placeholder="Ex: run:correr&#10;eat:comer"></textarea><br>
+    <button onclick="importWords()">✔️ Apply Words</button>
+  </div>
+
+  <div class="grid" id="wordGrid"></div>
+  <div id="message"></div>
+  <div id="footerBar">🎧 Waiting for input...</div>
+
+  <script>
+    let defaultWords = [
+      "run", "eat", "play", "love",
+      "study", "go", "work", "drink",
+      "sleep", "walk", "have", "drive",
+      "cook", "like", "listen", "jump"
+    ];
+
+    let translations = [
+      "correr", "comer", "brincar", "amar",
+      "estudar", "ir", "trabalhar", "beber",
+      "dormir", "andar", "ter", "dirigir",
+      "cozinhar", "gostar", "ouvir", "pular"
+    ];
+
+    let editMode = false;
+    let reverseMode = false;
+    let listening = false;
+    let recognition;
+    let recognizedWords = new Set();
+
+    const wordGrid = document.getElementById('wordGrid');
+    const micBtn = document.getElementById('micBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const editToggle = document.getElementById('editToggle');
+    const reverseToggle = document.getElementById('reverseToggle');
+    const exportBtn = document.getElementById('exportBtn');
+    const importToggle = document.getElementById('importToggle');
+    const message = document.getElementById('message');
+    const footerBar = document.getElementById('footerBar');
+    const importArea = document.getElementById('importArea');
+    const importText = document.getElementById('importText');
+
+    function renderGrid() {
+      wordGrid.innerHTML = '';
+      defaultWords.forEach((word, i) => {
+        const displayText = reverseMode ? translations[i] : word;
+        const cell = document.createElement('div');
+        if (editMode) {
+          const input = document.createElement('input');
+          input.className = "word-edit";
+          input.value = word;
+          input.onchange = () => {
+            defaultWords[i] = input.value.trim().toLowerCase();
+            recognizedWords.clear();
+            message.textContent = '';
+          };
+          cell.appendChild(input);
+        } else {
+          cell.textContent = displayText;
+          cell.className = 'word-btn';
+          cell.id = `word-${i}`;
+        }
+        wordGrid.appendChild(cell);
+      });
+    }
+
+    function checkVictory() {
+      if (recognizedWords.size === defaultWords.length) {
+        message.textContent = "🎉 Parabéns! Você acertou todas!";
+        recognition.stop();
+        listening = false;
+        micBtn.classList.remove('active');
+        micBtn.textContent = "✅ Complete!";
+        footerBar.textContent = "🏁 Finished!";
+      }
+    }
+
+    function matchWord(spoken) {
+      let found = false;
+      defaultWords.forEach((word, i) => {
+        if (!recognizedWords.has(word) && spoken.includes(word)) {
+          recognizedWords.add(word);
+          const btn = document.getElementById(`word-${i}`);
+          if (btn) {
+            btn.classList.add('correct');
+            btn.style.pointerEvents = "none";
+          }
+          found = true;
+        }
+      });
+      return found;
+    }
+
+    editToggle.onclick = () => {
+      editMode = !editMode;
+      recognizedWords.clear();
+      message.textContent = '';
+      renderGrid();
+    };
+
+    reverseToggle.onclick = () => {
+      reverseMode = !reverseMode;
+      reverseToggle.textContent = reverseMode ? "🔁 Reverse Mode: ON" : "🔁 Reverse Mode: OFF";
+      recognizedWords.clear();
+      message.textContent = '';
+      renderGrid();
+    };
+
+    exportBtn.onclick = () => {
+      const list = reverseMode ? translations : defaultWords;
+      const blob = new Blob([list.join('\n')], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "vocab-list.txt";
+      a.click();
+    };
+
+    importToggle.onclick = () => {
+      importArea.style.display = importArea.style.display === 'none' ? 'block' : 'none';
+    };
+
+    function importWords() {
+      const lines = importText.value.trim().split('\n');
+      defaultWords = [];
+      translations = [];
+      lines.forEach(line => {
+        const parts = line.split(':');
+        defaultWords.push(parts[0].trim().toLowerCase());
+        translations.push(parts[1] ? parts[1].trim() : parts[0].trim());
+      });
+      recognizedWords.clear();
+      message.textContent = '';
+      renderGrid();
+      importArea.style.display = 'none';
+    }
+
+    if ('webkitSpeechRecognition' in window) {
+      recognition = new webkitSpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.continuous = true;
+      recognition.interimResults = false;
+
+      recognition.onresult = (event) => {
+        const spoken = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+        footerBar.textContent = `🗣️ You said: "${spoken}"`;
+        if (!matchWord(spoken)) {
+          footerBar.textContent = `❓ Not understood: "${spoken}"`;
+        }
+        checkVictory();
+      };
+
+      recognition.onend = () => {
+        if (listening && recognizedWords.size < defaultWords.length) {
+          recognition.start();
+        }
+      };
+
+      recognition.onerror = (e) => {
+        console.error("Erro:", e.error);
+        footerBar.textContent = "⚠️ Error: " + e.error;
+      };
+    }
+
+    micBtn.onclick = () => {
+      if (!listening) {
+        recognition.start();
+        listening = true;
+        micBtn.classList.add('active');
+        micBtn.textContent = "🎧 Listening...";
+        footerBar.textContent = "🎧 Listening...";
+      }
+    };
+
+    stopBtn.onclick = () => {
+      if (listening) {
+        recognition.stop();
+        listening = false;
+        micBtn.classList.remove('active');
+        micBtn.textContent = "🎙️ Start Listening";
+        footerBar.textContent = "⏹️ Stopped.";
+      }
+    };
+
+    renderGrid();
+  </script>
+</body>
+</html>
