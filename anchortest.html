@@ -227,7 +227,7 @@
     const editArea = document.getElementById('editArea');
     editArea.innerHTML = '';
 
-    // Card de edição à esquerda (sem labels, só placeholders)
+    // 1. Card de edição
     const editCard = document.createElement('div');
     editCard.className = 'edit-card';
     editCard.innerHTML = `
@@ -240,7 +240,15 @@
       </div>
     `;
 
-    // Card de preview à direita
+    // 2. Novo bloco do meio: More Info e tags disponíveis
+    const moreCard = document.createElement('div');
+    moreCard.className = 'edit-card';
+    moreCard.innerHTML = `
+      <textarea class="input-more" placeholder="More Info" rows="10"></textarea>
+      <div class="tag-suggestions" style="display:flex; flex-wrap:wrap; gap:0.4rem;"></div>
+    `;
+
+    // 3. Preview card
     const previewCard = document.createElement('div');
     previewCard.className = 'preview-card';
     previewCard.innerHTML = `
@@ -248,12 +256,61 @@
       <div class="preview-desc">Description</div>
       <div class="preview-tags"></div>
       <a class="preview-link" href="#" target="_blank">Play</a>
+      <a class="preview-more" href="javascript:void(0)" onclick="showMoreInfo()" style="background:#eee; color:#000; margin-top:10px;">MORE</a>
     `;
 
-    // Sincroniza preview ao digitar (dinâmico)
+    // Sincronização
     editCard.querySelector('.input-nome').addEventListener('input', e => {
       previewCard.querySelector('.preview-title').textContent = e.target.value || 'Game Name';
     });
+    editCard.querySelector('.input-desc').addEventListener('input', e => {
+      previewCard.querySelector('.preview-desc').textContent = e.target.value || 'Description';
+    });
+    editCard.querySelector('.input-tags').addEventListener('input', e => {
+      const val = e.target.value;
+      const arr = val.split(',').map(t=>t.trim()).filter(Boolean);
+      previewCard.querySelector('.preview-tags').innerHTML = arr.map(tag=>`<span class="preview-tag">${tag}</span>`).join('');
+    });
+    editCard.querySelector('.input-link').addEventListener('input', e => {
+      const val = e.target.value;
+      const a = previewCard.querySelector('.preview-link');
+      a.href = val || '#';
+      a.textContent = getLabelForLink(val);
+    });
+
+    // Renderiza as tags disponíveis no bloco do meio
+    db.collection("games").get().then(snapshot => {
+      const allTags = [...new Set(snapshot.docs.flatMap(doc => {
+        const tags = doc.data().tags || '';
+        return tags.split(',').map(t => t.trim().toLowerCase());
+      }))];
+      const tagContainer = moreCard.querySelector('.tag-suggestions');
+      const inputTags = editCard.querySelector('.input-tags');
+      allTags.forEach(tag => {
+        const btn = document.createElement('button');
+        btn.textContent = tag;
+        btn.style.cssText = 'font-size:0.8rem; padding:0.3rem 0.7rem; border-radius:5px; background:#4a90e2; color:white; border:none; cursor:pointer;';
+        btn.onclick = () => {
+          const current = inputTags.value.trim();
+          const tags = current ? current.split(',').map(t => t.trim()) : [];
+          if (!tags.includes(tag)) tags.push(tag);
+          inputTags.value = tags.join(', ');
+          inputTags.dispatchEvent(new Event('input')); // atualiza preview
+        };
+        tagContainer.appendChild(btn);
+      });
+    });
+
+    // Container com os 3 blocos
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.gap = '2rem';
+    container.appendChild(editCard);
+    container.appendChild(moreCard);
+    container.appendChild(previewCard);
+
+    editArea.appendChild(container);
+  });
     editCard.querySelector('.input-desc').addEventListener('input', e => {
       previewCard.querySelector('.preview-desc').textContent = e.target.value || 'Description';
     });
@@ -292,10 +349,31 @@
     const descricao = editCard.querySelector('.input-desc').value.trim();
     const tags = editCard.querySelector('.input-tags').value.trim();
     const link = editCard.querySelector('.input-link').value.trim();
+    const moreInfo = editCard.parentElement.querySelector('.input-more')?.value.trim() || '';
     if (!nome || !link) {
       showToast('⚠️ Preencha nome e link!');
       return;
     }
+    db.collection('games').doc().set({nome, descricao, tags, link, moreInfo})
+      .then(() => {
+        showToast('✅ Jogo adicionado com sucesso!');
+        // Limpa todos os campos do card editável
+        editCard.querySelector('.input-nome').value = '';
+        editCard.querySelector('.input-desc').value = '';
+        editCard.querySelector('.input-tags').value = '';
+        editCard.querySelector('.input-link').value = '';
+        editCard.parentElement.querySelector('.input-more').value = '';
+        // Limpa preview também
+        const editArea = document.getElementById('editArea');
+        const previewCard = editArea.querySelector('.preview-card');
+        previewCard.querySelector('.preview-title').textContent = 'Game Name';
+        previewCard.querySelector('.preview-desc').textContent = 'Description';
+        previewCard.querySelector('.preview-tags').innerHTML = '';
+        previewCard.querySelector('.preview-link').href = '#';
+        previewCard.querySelector('.preview-link').textContent = 'Play';
+        loadFromFirebase(); // atualiza home
+      });
+  }
     db.collection('games').doc().set({nome, descricao, tags, link})
       .then(() => {
         showToast('✅ Jogo adicionado com sucesso!');
@@ -322,11 +400,21 @@
     card.className = 'card';
     const isArquivo = g.link && /\.(pdf|zip|docx?|xlsx?|pptx?|mp3|mp4)$/i.test(g.link);
     const label = isArquivo ? 'Download' : 'Play';
+
     const a = document.createElement('a');
     a.href = g.link;
     a.textContent = label;
     a.target = '_blank';
     if (isArquivo) a.setAttribute('download', '');
+
+    const moreBtn = document.createElement('a');
+    moreBtn.href = "javascript:void(0)";
+    moreBtn.textContent = "MORE";
+    moreBtn.className = "more-button";
+    moreBtn.style.cssText = "display:inline-block;background:#eee;color:#000;text-decoration:none;padding:0.5rem 1rem;border-radius:6px;font-weight:bold;margin-top:0.5rem;";
+    moreBtn.onclick = () => {
+      showMoreInfoFromCard(g.moreInfo || 'No additional information.');
+    };
 
     const tagsArray = Array.isArray(g.tags)
       ? g.tags
@@ -340,6 +428,13 @@
       tagDiv.textContent = tag;
       tagContainer.appendChild(tagDiv);
     });
+
+    card.innerHTML = `<h2>${g.nome}</h2><p>${g.descricao}</p>`;
+    card.appendChild(tagContainer);
+    card.appendChild(a);
+    card.appendChild(moreBtn);
+    document.getElementById('homeGrid').appendChild(card);
+  });
 
     card.innerHTML = `
       <h2>${g.nome}</h2>
@@ -391,8 +486,25 @@
       allGames.forEach(renderCard);
       renderTagFilters();
     });
-  }
+
+function showMoreInfo() {
+  const moreText = document.querySelector('.input-more')?.value || '';
+  document.getElementById('moreInfoContent').textContent = moreText || 'No additional information.';
+  document.getElementById('moreToast').style.display = 'block';
+}
+function closeMoreInfo() {
+  document.getElementById('moreToast').style.display = 'none';
+}
+function showMoreInfoFromCard(text) {
+  document.getElementById('moreInfoContent').textContent = text || 'No additional information.';
+  document.getElementById('moreToast').style.display = 'block';
+}
+
 </script>
+
+<div id="moreToast" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; color:black; padding:2rem; border-radius:10px; box-shadow:0 0 20px rgba(0,0,0,0.3); z-index:3000; max-width:90%; max-height:80%; overflow:auto;">
+  <button onclick="closeMoreInfo()" style="position:absolute; top:10px; right:15px; background:none; border:none; font-size:1.2rem; font-weight:bold; cursor:pointer;">✖</button>
+  <div id="moreInfoContent">...</div>
+</div>
 </body>
 </html>
-
