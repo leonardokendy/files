@@ -235,8 +235,6 @@
       <textarea class="input-desc" placeholder="Description" rows="5"></textarea>
       <input type="text" class="input-tags" placeholder="Tags (comma-separated)">
       <input type="text" class="input-link" placeholder="URL">
-<input type="text" class="input-btnlabel" placeholder="Button Label (e.g. Play)">
-<textarea class="input-detalhes" placeholder="Extra Details / Instructions" rows="4"></textarea>
       <div class="btn-actions">
         <button type="button" onclick="addGame(this)">Add</button>
       </div>
@@ -294,13 +292,11 @@
     const descricao = editCard.querySelector('.input-desc').value.trim();
     const tags = editCard.querySelector('.input-tags').value.trim();
     const link = editCard.querySelector('.input-link').value.trim();
-    const btnlabel = editCard.querySelector('.input-btnlabel').value.trim();
-    const detalhes = editCard.querySelector('.input-detalhes').value.trim();
     if (!nome || !link) {
       showToast('⚠️ Preencha nome e link!');
       return;
     }
-    db.collection('games').doc().set({nome, descricao, tags, link, btnlabel, detalhes})
+    db.collection('games').doc().set({nome, descricao, tags, link})
       .then(() => {
         showToast('✅ Jogo adicionado com sucesso!');
         // Limpa todos os campos do card editável
@@ -308,8 +304,6 @@
         editCard.querySelector('.input-desc').value = '';
         editCard.querySelector('.input-tags').value = '';
         editCard.querySelector('.input-link').value = '';
-        editCard.querySelector('.input-btnlabel').value = '';
-        editCard.querySelector('.input-detalhes').value = '';
         // Limpa preview também
         const editArea = document.getElementById('editArea');
         const previewCard = editArea.querySelector('.preview-card');
@@ -326,38 +320,7 @@
   function renderCard(g) {
     const card = document.createElement('div');
     card.className = 'card';
-    
-const a = document.createElement('a');
-a.href = g.link;
-a.textContent = g.btnlabel || 'Play';
-a.target = '_blank';
-
-const infoBtn = document.createElement('button');
-infoBtn.textContent = '?';
-infoBtn.style.cssText = `
-  background: #eee;
-  border-radius: 50%;
-  border: none;
-  width: 28px;
-  height: 28px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 0.5rem;
-`;
-
-const details = document.createElement('div');
-details.textContent = g.detalhes || 'No extra info.';
-details.style.cssText = `
-  display: none;
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-  color: #444;
-`;
-
-infoBtn.onclick = () => {
-  details.style.display = (details.style.display === 'none') ? 'block' : 'none';
-};
-
+    const isArquivo = g.link && /\.(pdf|zip|docx?|xlsx?|pptx?|mp3|mp4)$/i.test(g.link);
     const label = isArquivo ? 'Download' : 'Play';
     const a = document.createElement('a');
     a.href = g.link;
@@ -384,8 +347,6 @@ infoBtn.onclick = () => {
     `;
     card.appendChild(tagContainer);
     card.appendChild(a);
-    card.appendChild(infoBtn);
-    card.appendChild(details);
     document.getElementById('homeGrid').appendChild(card);
   }
 
