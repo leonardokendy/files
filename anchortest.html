@@ -190,7 +190,6 @@
       userLogged = true;
       loadFromFirebase();
     }
-  });
 
   function handleLogin() {
     const provider = new firebase.auth.GoogleAuthProvider();
@@ -200,7 +199,6 @@
         document.querySelector('.login-btn').disabled = true;
         userLogged = true;
         loadFromFirebase();
-      })
       .catch(error => console.error('Erro no login:', error));
   }
 
@@ -320,11 +318,9 @@
   // Sincronizar campos com preview
   inputNome.addEventListener('input', e => {
     title.textContent = e.target.value || 'Game Name';
-  });
 
   inputDesc.addEventListener('input', e => {
     desc.textContent = e.target.value || 'Description';
-  });
 
   inputTags.addEventListener('input', e => {
     const val = e.target.value;
@@ -335,21 +331,18 @@
       span.className = 'preview-tag';
       span.textContent = tag;
       tags.appendChild(span);
-    });
-  });
 
   inputLink.addEventListener('input', e => {
     const val = e.target.value;
     playBtn.href = val || '#';
     playBtn.textContent = getLabelForLink(val);
-  });
 
   // Renderizar tags disponíveis
   db.collection("games").get().then(snapshot => {
     const allTags = [...new Set(snapshot.docs.flatMap(doc => {
       const tags = doc.data().tags || '';
       return tags.split(',').map(t => t.trim().toLowerCase());
-    }))];
+    })];
     allTags.forEach(tag => {
       const btn = document.createElement('button');
       btn.textContent = tag;
@@ -362,8 +355,6 @@
         inputTags.dispatchEvent(new Event('input'));
       };
       tagSuggestions.appendChild(btn);
-    });
-  });
 
   // Montar e adicionar ao DOM
   const container = document.createElement('div');
@@ -373,28 +364,24 @@
   container.appendChild(moreCard);
   container.appendChild(previewCard);
   editArea.appendChild(container);
-});
     editCard.querySelector('.input-desc').addEventListener('input', e => {
       previewCard.querySelector('.preview-desc').textContent = e.target.value || 'Description';
-    });
     editCard.querySelector('.input-tags').addEventListener('input', e => {
       const val = e.target.value;
       const arr = val.split(',').map(t=>t.trim()).filter(Boolean);
       previewCard.querySelector('.preview-tags').innerHTML = arr.map(tag=>`<span class="preview-tag">${tag}</span>`).join('');
-    });
     editCard.querySelector('.input-link').addEventListener('input', e => {
       const val = e.target.value;
       const a = previewCard.querySelector('.preview-link');
       a.href = val || '#';
       a.textContent = getLabelForLink(val);
-    });
 
     // Renderiza as tags disponíveis no bloco do meio
     db.collection("games").get().then(snapshot => {
       const allTags = [...new Set(snapshot.docs.flatMap(doc => {
         const tags = doc.data().tags || '';
         return tags.split(',').map(t => t.trim().toLowerCase());
-      }))];
+      })];
       const tagContainer = moreCard.querySelector('.tag-suggestions');
       const inputTags = editCard.querySelector('.input-tags');
       allTags.forEach(tag => {
@@ -409,8 +396,6 @@
           inputTags.dispatchEvent(new Event('input')); // atualiza preview
         };
         tagContainer.appendChild(btn);
-      });
-    });
 
     // Container com os 3 blocos
     const container = document.createElement('div');
@@ -421,21 +406,17 @@
     container.appendChild(previewCard);
 
     editArea.appendChild(container);
-  });
     editCard.querySelector('.input-desc').addEventListener('input', e => {
       previewCard.querySelector('.preview-desc').textContent = e.target.value || 'Description';
-    });
     editCard.querySelector('.input-tags').addEventListener('input', e => {
       const val = e.target.value;
       const arr = val.split(',').map(t=>t.trim()).filter(Boolean);
       previewCard.querySelector('.preview-tags').innerHTML = arr.map(tag=>`<span class="preview-tag">${tag}</span>`).join('');
-    });
     editCard.querySelector('.input-link').addEventListener('input', e => {
       const val = e.target.value;
       const a = previewCard.querySelector('.preview-link');
       a.href = val || '#';
       a.textContent = getLabelForLink(val);
-    });
 
     // Container com os dois cartões lado a lado
     const container = document.createElement('div');
@@ -465,7 +446,7 @@
       showToast('⚠️ Preencha nome e link!');
       return;
     }
-    db.collection('games').doc().set({nome, descricao, tags, link, moreInfo})
+    db.collection('games').doc().set({nome, descricao, tags, link, moreInfo}
       .then(() => {
         showToast('✅ Jogo adicionado com sucesso!');
         // Limpa todos os campos do card editável
@@ -483,9 +464,8 @@
         previewCard.querySelector('.preview-link').href = '#';
         previewCard.querySelector('.preview-link').textContent = 'Play';
         loadFromFirebase(); // atualiza home
-      });
   }
-    db.collection('games').doc().set({nome, descricao, tags, link})
+    db.collection('games').doc().set({nome, descricao, tags, link}
       .then(() => {
         showToast('✅ Jogo adicionado com sucesso!');
         // Limpa todos os campos do card editável
@@ -502,7 +482,6 @@
         previewCard.querySelector('.preview-link').href = '#';
         previewCard.querySelector('.preview-link').textContent = 'Play';
         loadFromFirebase(); // atualiza home
-      });
   }
 
   // ---- RESTANTE DA HOME E TAGS (INALTERADO) ----
@@ -538,14 +517,12 @@
       tagDiv.className = 'tag';
       tagDiv.textContent = tag;
       tagContainer.appendChild(tagDiv);
-    });
 
     card.innerHTML = `<h2>${g.nome}</h2><p>${g.descricao}</p>`;
     card.appendChild(tagContainer);
     card.appendChild(a);
     card.appendChild(moreBtn);
     document.getElementById('homeGrid').appendChild(card);
-  });
 
     card.innerHTML = `
       <h2>${g.nome}</h2>
@@ -566,7 +543,6 @@
       btn.textContent = tag;
       btn.onclick = () => toggleTag(tag, btn);
       container.appendChild(btn);
-    });
   }
 
   function toggleTag(tag, button) {
@@ -585,7 +561,6 @@
       : allGames.filter(g => {
           const tags = Array.isArray(g.tags) ? g.tags : g.tags.split(',').map(t => t.trim().toLowerCase());
           return selectedTags.every(tag => tags.includes(tag));
-        });
     document.getElementById('homeGrid').innerHTML = '';
     filtered.forEach(renderCard);
   }
@@ -596,7 +571,6 @@
       document.getElementById('homeGrid').innerHTML = '';
       allGames.forEach(renderCard);
       renderTagFilters();
-    });
 
 function showMoreInfo() {
   const moreText = document.querySelector('.input-more')?.value || '';
@@ -619,3 +593,4 @@ function showMoreInfoFromCard(text) {
 </div>
 </body>
 </html>
+}}}}}}}}}}}}}}}}}}}}}}}
