@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>S.T.A.G.E</title>
-<style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>S.T.A.G.E</title>
+  <style>
     body { font-family: Arial, sans-serif; background: #f5faff; margin: 0; padding: 0 0 60px 0; }
     header { background: #4a90e2; color: white; padding: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; }
     .header-left { display: flex; align-items: center; gap: 1rem; }
@@ -135,33 +134,37 @@
       .edit-card, .preview-card { max-width: 100%; min-width: unset; }
     }
   </style>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <header>
-<div class="header-left">
-<img alt="Spring School Logo" src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png"/>
-<div class="header-title">
-<h1>S.T.A.G.E</h1>
-<div class="subtitle">Spring Teacher's Activity &amp; Guidance Engine</div>
-</div>
-</div>
-<button class="login-btn" onclick="handleLogin()">Login</button>
+  <div class="header-left">
+    <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" alt="Spring School Logo"/>
+    <div class="header-title">
+      <h1>S.T.A.G.E</h1>
+      <div class="subtitle">Spring Teacher's Activity & Guidance Engine</div>
+    </div>
+  </div>
+  <button class="login-btn" onclick="handleLogin()">Login</button>
 </header>
-<main class="active" id="homeView">
-<div id="tagFilters"></div>
-<div class="grid" id="homeGrid"></div>
+
+<main id="homeView" class="active">
+  <div id="tagFilters"></div>
+  <div class="grid" id="homeGrid"></div>
 </main>
+
 <main id="addNewView">
-<div id="editArea"></div>
+  <div id="editArea"></div>
 </main>
+
 <footer>
-<button onclick="switchView('home')">🏠 Home</button>
-<button onclick="switchView('addNew')">➕ Add New</button>
+  <button onclick="switchView('home')">🏠 Home</button>
+  <button onclick="switchView('addNew')">➕ Add New</button>
 </footer>
 <div id="toast">💾 Jogos salvos com sucesso!</div>
+
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyAsYg7ZTHXD_a6d_icFLw9e5y0jSTfXBi0",
@@ -230,7 +233,6 @@
     editCard.innerHTML = `
       <input type="text" class="input-nome" placeholder="Game Name">
       <textarea class="input-desc" placeholder="Description" rows="5"></textarea>
-      <textarea class="input-info" placeholder="More Info" rows="5"></textarea>
       <input type="text" class="input-tags" placeholder="Tags (comma-separated)">
       <input type="text" class="input-link" placeholder="URL">
       <div class="btn-actions">
@@ -245,18 +247,10 @@
       <div class="preview-title">Game Name</div>
       <div class="preview-desc">Description</div>
       <div class="preview-tags"></div>
-      <button class="preview-more" onclick="showMoreInfo()">MORE</button>
       <a class="preview-link" href="#" target="_blank">Play</a>
     `;
 
     // Sincroniza preview ao digitar (dinâmico)
-    editCard.querySelector('.input-info').addEventListener('input', e => {
-      const val = e.target.value.trim();
-      previewCard.dataset.more = val;
-      infoContent.textContent = val;
-    });
-      previewCard.dataset.more = e.target.value.trim();
-    });
     editCard.querySelector('.input-nome').addEventListener('input', e => {
       previewCard.querySelector('.preview-title').textContent = e.target.value || 'Game Name';
     });
@@ -276,65 +270,11 @@
     });
 
     // Container com os dois cartões lado a lado
-
-    // Terceiro painel: preview do campo More Info + tags existentes
-    const thirdPanel = document.createElement('div');
-    thirdPanel.className = 'third-panel';
-    thirdPanel.style = 'background:#fff; border-radius:14px; box-shadow:0 2px 16px rgba(0,0,0,0.09); padding:2rem 1.5rem; min-width:300px; max-width:350px; display:flex; flex-direction:column; gap:1rem; font-size:0.95rem;';
-
-    const infoTitle = document.createElement('div');
-    infoTitle.style = 'font-weight:bold; font-size:1.1rem;';
-    infoTitle.textContent = 'Preview: More Info';
-
-    const infoContent = document.createElement('div');
-    infoContent.className = 'info-preview';
-    infoContent.style = 'white-space:pre-line; color:#333;';
-    infoContent.textContent = '';
-
-    const tagTitle = document.createElement('div');
-    tagTitle.style = 'margin-top:1.2rem; font-weight:bold;';
-    tagTitle.textContent = 'Tags disponíveis:';
-
-    const tagList = document.createElement('div');
-    tagList.className = 'tag-list';
-    tagList.style = 'display:flex; flex-wrap:wrap; gap:0.4rem;';
-
-    thirdPanel.appendChild(infoTitle);
-    thirdPanel.appendChild(infoContent);
-    thirdPanel.appendChild(tagTitle);
-    thirdPanel.appendChild(tagList);
-
     const container = document.createElement('div');
     container.style.display = 'flex';
     container.style.gap = '2rem';
     container.appendChild(editCard);
     container.appendChild(previewCard);
-
-    container.appendChild(thirdPanel);
-
-    
-    const tagInput = editCard.querySelector('.input-tags');
-    const addTagToInput = (tag) => {
-      let current = tagInput.value.split(',').map(t => t.trim()).filter(Boolean);
-      if (!current.includes(tag)) {
-        current.push(tag);
-        tagInput.value = current.join(', ');
-        tagInput.dispatchEvent(new Event('input'));
-      }
-    };
-
-    const uniqueTags = [...new Set(allGames.flatMap(g =>
-      Array.isArray(g.tags) ? g.tags : g.tags.split(',').map(t => t.trim().toLowerCase())
-    ))];
-
-    uniqueTags.forEach(tag => {
-      const tagBtn = document.createElement('button');
-      tagBtn.textContent = tag;
-      tagBtn.style = 'background:#e0e0e0; border:none; border-radius:6px; padding:0.3rem 0.7rem; cursor:pointer;';
-      tagBtn.onclick = () => addTagToInput(tag);
-      tagList.appendChild(tagBtn);
-    });
-
 
     // Adiciona ao editArea
     editArea.appendChild(container);
@@ -352,12 +292,11 @@
     const descricao = editCard.querySelector('.input-desc').value.trim();
     const tags = editCard.querySelector('.input-tags').value.trim();
     const link = editCard.querySelector('.input-link').value.trim();
-    const infoExtra = editCard.querySelector('.input-info').value.trim();
     if (!nome || !link) {
       showToast('⚠️ Preencha nome e link!');
       return;
     }
-    db.collection('games').doc().set({nome, descricao, tags, link, infoExtra})
+    db.collection('games').doc().set({nome, descricao, tags, link})
       .then(() => {
         showToast('✅ Jogo adicionado com sucesso!');
         // Limpa todos os campos do card editável
@@ -376,19 +315,6 @@
         loadFromFirebase(); // atualiza home
       });
   }
-
-  
-  function showMoreInfo() {
-    const preview = document.querySelector('.preview-card');
-    const content = preview.dataset.more || 'No additional information.';
-    document.getElementById('moreContent').textContent = content;
-    document.getElementById('moreToast').style.display = 'block';
-  }
-
-  function hideMoreInfo() {
-    document.getElementById('moreToast').style.display = 'none';
-  }
-
 
   // ---- RESTANTE DA HOME E TAGS (INALTERADO) ----
   function renderCard(g) {
@@ -420,17 +346,6 @@
       <p>${g.descricao}</p>
     `;
     card.appendChild(tagContainer);
-
-    const moreBtn = document.createElement('button');
-    moreBtn.textContent = 'MORE';
-    moreBtn.style.cssText = 'margin-bottom:0.6rem; background:#fff; border:1px solid #4a90e2; padding:0.4rem 1rem; border-radius:6px; font-weight:bold; cursor:pointer;';
-    moreBtn.onclick = () => {
-      const toast = document.getElementById('moreToast');
-      document.getElementById('moreContent').textContent = g.infoExtra || 'No additional information.';
-      toast.style.display = 'block';
-    };
-    card.appendChild(moreBtn);
-
     card.appendChild(a);
     document.getElementById('homeGrid').appendChild(card);
   }
@@ -478,11 +393,5 @@
     });
   }
 </script>
-<div id="moreToast" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-  background:white; padding:2rem; border-radius:12px; box-shadow:0 0 15px #0003; max-width:90%; width:400px;
-  z-index:3000; font-size:1rem; line-height:1.5; color:#333;">
-<button onclick="hideMoreInfo()" style="position:absolute; top:0.5rem; right:0.7rem; background:none; border:none; font-size:1.2rem; cursor:pointer;">✖</button>
-<div id="moreContent"></div>
-</div>
 </body>
 </html>
