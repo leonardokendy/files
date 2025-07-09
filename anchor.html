@@ -308,8 +308,8 @@
         editCard.querySelector('.input-desc').value = '';
         editCard.querySelector('.input-tags').value = '';
         editCard.querySelector('.input-link').value = '';
-        editCard.querySelector('.input-detalhes').value = '';
         editCard.querySelector('.input-btnlabel').value = '';
+        editCard.querySelector('.input-detalhes').value = '';
         // Limpa preview também
         const editArea = document.getElementById('editArea');
         const previewCard = editArea.querySelector('.preview-card');
@@ -327,36 +327,36 @@
     const card = document.createElement('div');
     card.className = 'card';
     
-    const a = document.createElement('a');
-    a.href = g.link;
-    a.textContent = g.btnlabel || 'Play';
-    a.target = '_blank';
+const a = document.createElement('a');
+a.href = g.link;
+a.textContent = g.btnlabel || 'Play';
+a.target = '_blank';
 
-    const infoBtn = document.createElement('button');
-    infoBtn.textContent = '?';
-    infoBtn.style.cssText = `
-      background: #eee;
-      border-radius: 50%;
-      border: none;
-      width: 28px;
-      height: 28px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 0.5rem;
-    `;
+const infoBtn = document.createElement('button');
+infoBtn.textContent = '?';
+infoBtn.style.cssText = `
+  background: #eee;
+  border-radius: 50%;
+  border: none;
+  width: 28px;
+  height: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 0.5rem;
+`;
 
-    const details = document.createElement('div');
-    details.textContent = g.detalhes || 'No extra info.';
-    details.style.cssText = `
-      display: none;
-      font-size: 0.9rem;
-      margin-top: 0.5rem;
-      color: #444;
-    `;
+const details = document.createElement('div');
+details.textContent = g.detalhes || 'No extra info.';
+details.style.cssText = `
+  display: none;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  color: #444;
+`;
 
-    infoBtn.onclick = () => {
-      details.style.display = (details.style.display === 'none') ? 'block' : 'none';
-    };
+infoBtn.onclick = () => {
+  details.style.display = (details.style.display === 'none') ? 'block' : 'none';
+};
 
     const label = isArquivo ? 'Download' : 'Play';
     const a = document.createElement('a');
@@ -434,3 +434,4 @@
 </script>
 </body>
 </html>
+
