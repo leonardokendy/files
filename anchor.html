@@ -25,55 +25,114 @@
     .card a { display: inline-block; background: #ffc107; color: #000; text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; margin-top: 0.5rem; }
     footer { position: fixed; bottom: 0; left: 0; right: 0; background: #4a90e2; display: flex; justify-content: center; gap: 2rem; padding: 0.75rem 0; z-index: 1000; }
     footer button { background: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    #homeView, #databaseView { display: none; }
-    #homeView.active, #databaseView.active { display: block; }
-    #gameTable {
-      width: 90%;
-      margin: 2rem auto;
-      border-collapse: separate;
-      border-spacing: 0 0.5rem;
-      background: #fff;
-      border-radius: 12px;
-      padding: 1rem;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    #homeView, #addNewView { display: none; }
+    #homeView.active, #addNewView.active { display: block; }
+    #editArea {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 2rem;
+      padding: 2rem 0;
+      max-width: 1000px;
+      margin: 0 auto;
     }
-    #gameTable th { display: none; }
-    #gameTable td { border: none; padding: 0.5rem; vertical-align: top; }
-    #gameTable input[type="text"] {
+    .edit-card, .preview-card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.09);
+      padding: 2rem 1.5rem 1.5rem 1.5rem;
+      min-width: 340px;
+      max-width: 400px;
+      min-height: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .edit-card input[type="text"], .edit-card textarea {
       width: 100%;
-      padding: 0.4rem 0.6rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 0.9rem;
+      font-size: 1rem;
+      border-radius: 7px;
+      border: 1px solid #c9c9c9;
+      padding: 0.7rem;
+      margin-bottom: 0.2rem;
       box-sizing: border-box;
     }
-    #gameTable textarea {
-      width: 100%;
+    .edit-card textarea {
       min-height: 90px;
       max-width: 100%;
-      padding: 0.4rem 0.6rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      box-sizing: border-box;
       resize: vertical;
     }
-    #gameTable tr { background: #f9f9f9; border-radius: 8px; }
-    #gameTable tr td:last-child { text-align: center; }
-    #gameTable button {
-      font-size: 0.85rem;
-      background: #4a90e2;
-      color: white;
-      border: none;
-      padding: 0.4rem 0.6rem;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 0.4rem;
+    .btn-actions {
+      display: flex;
+      gap: 1.1rem;
+      margin-top: 1.3rem;
+      justify-content: flex-end;
     }
-    .btn-bar { margin: 1rem 2rem; }
-    .btn-bar button, .btn-bar select { margin-right: 1rem; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; }
-    #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 1rem 2rem; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.5s ease-in-out; z-index: 2000; }
+    .btn-actions button {
+      padding: 0.5rem 1.3rem;
+      font-size: 1.02rem;
+      border-radius: 7px;
+      font-weight: bold;
+      border: none;
+      background: #4a90e2;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .btn-actions button:active { background: #306699; }
+    .preview-card {
+      align-items: center;
+      justify-content: flex-start;
+      text-align: center;
+    }
+    .preview-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+      color: #222;
+    }
+    .preview-desc {
+      font-size: 1.01rem;
+      color: #444;
+      margin-bottom: 0.6rem;
+      min-height: 52px;
+    }
+    .preview-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      justify-content: center;
+      margin-bottom: 0.7rem;
+    }
+    .preview-tag {
+      background: #4a90e2;
+      color: #fff;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      padding: 0.22rem 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+    .preview-link {
+      display: inline-block;
+      background: #ffc107;
+      color: #000;
+      text-decoration: none;
+      padding: 0.7rem 2rem;
+      border-radius: 7px;
+      font-weight: bold;
+      margin-top: 0.6rem;
+      font-size: 1.08rem;
+      transition: box-shadow .1s;
+      box-shadow: 0 2px 6px #0001;
+    }
+    .preview-link:active { box-shadow: none; }
+    #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 1rem 2rem; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.5s; z-index: 2000; }
     #toast.show { display: block; opacity: 1; }
+    @media (max-width: 900px) {
+      #editArea { flex-direction: column; align-items: stretch; }
+      .edit-card, .preview-card { max-width: 100%; min-width: unset; }
+    }
   </style>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -96,27 +155,13 @@
   <div class="grid" id="homeGrid"></div>
 </main>
 
-<main id="databaseView">
-  <div class="btn-bar">
-    <button onclick="addRow()">➕ Add Game</button>
-    <button onclick="saveToFirebase()">💾 Save All</button>
-    <!-- Drop-down removido -->
-  </div>
-  <table id="gameTable">
-    <tr>
-      <th>Nome</th>
-      <th>Link</th>
-      <th>Descrição</th>
-      <th>Tags</th>
-      <th>Tipo</th>
-      <th>Ações</th>
-    </tr>
-  </table>
+<main id="addNewView">
+  <div id="editArea"></div>
 </main>
 
 <footer>
   <button onclick="switchView('home')">🏠 Home</button>
-  <button onclick="switchView('database')">📁 Banco de Dados</button>
+  <button onclick="switchView('addNew')">➕ Add New</button>
 </footer>
 <div id="toast">💾 Jogos salvos com sucesso!</div>
 
@@ -160,13 +205,14 @@
   }
 
   function switchView(view) {
-    if (view === 'database' && !userLogged) {
-      showToast("⚠️ Faça login para acessar o banco de dados.");
+    if (view === 'addNew' && !userLogged) {
+      showToast("⚠️ Faça login para acessar o cadastro.");
       return;
     }
     document.getElementById('homeView').classList.remove('active');
-    document.getElementById('databaseView').classList.remove('active');
+    document.getElementById('addNewView').classList.remove('active');
     document.getElementById(view + 'View').classList.add('active');
+    if(view === 'addNew') showEditCard();
   }
 
   function showToast(msg) {
@@ -176,58 +222,142 @@
     setTimeout(() => toast.classList.remove('show'), 3000);
   }
 
-  function addRow() {
-    const table = document.getElementById('gameTable');
-    const row = table.insertRow();
-    const placeholders = ['Game Name', 'URL', 'Description', 'Tags (comma-separated)', 'Type'];
-    placeholders.forEach((text, idx) => {
-      const cell = row.insertCell();
-      if (idx === 2) {
-        // Campo de descrição é textarea com 5 linhas
-        const textarea = document.createElement('textarea');
-        textarea.placeholder = text;
-        textarea.rows = 5;
-        cell.appendChild(textarea);
-      } else {
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = text;
-        cell.appendChild(input);
-      }
+  // ----------- EDIT MODE: APENAS 1 CARD -----------
+  function showEditCard() {
+    const editArea = document.getElementById('editArea');
+    editArea.innerHTML = '';
+
+    // Card de edição à esquerda (sem labels, só placeholders)
+    const editCard = document.createElement('div');
+    editCard.className = 'edit-card';
+    editCard.innerHTML = `
+      <input type="text" class="input-nome" placeholder="Game Name">
+      <textarea class="input-desc" placeholder="Description" rows="5"></textarea>
+      <input type="text" class="input-tags" placeholder="Tags (comma-separated)">
+      <input type="text" class="input-link" placeholder="URL">
+<input type="text" class="input-btnlabel" placeholder="Button Label (e.g. Play)">
+<textarea class="input-detalhes" placeholder="Extra Details / Instructions" rows="4"></textarea>
+      <div class="btn-actions">
+        <button type="button" onclick="addGame(this)">Add</button>
+      </div>
+    `;
+
+    // Card de preview à direita
+    const previewCard = document.createElement('div');
+    previewCard.className = 'preview-card';
+    previewCard.innerHTML = `
+      <div class="preview-title">Game Name</div>
+      <div class="preview-desc">Description</div>
+      <div class="preview-tags"></div>
+      <a class="preview-link" href="#" target="_blank">Play</a>
+    `;
+
+    // Sincroniza preview ao digitar (dinâmico)
+    editCard.querySelector('.input-nome').addEventListener('input', e => {
+      previewCard.querySelector('.preview-title').textContent = e.target.value || 'Game Name';
     });
-    row.insertCell(); // Ações (vazio, botão de deletar removido)
+    editCard.querySelector('.input-desc').addEventListener('input', e => {
+      previewCard.querySelector('.preview-desc').textContent = e.target.value || 'Description';
+    });
+    editCard.querySelector('.input-tags').addEventListener('input', e => {
+      const val = e.target.value;
+      const arr = val.split(',').map(t=>t.trim()).filter(Boolean);
+      previewCard.querySelector('.preview-tags').innerHTML = arr.map(tag=>`<span class="preview-tag">${tag}</span>`).join('');
+    });
+    editCard.querySelector('.input-link').addEventListener('input', e => {
+      const val = e.target.value;
+      const a = previewCard.querySelector('.preview-link');
+      a.href = val || '#';
+      a.textContent = getLabelForLink(val);
+    });
+
+    // Container com os dois cartões lado a lado
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.gap = '2rem';
+    container.appendChild(editCard);
+    container.appendChild(previewCard);
+
+    // Adiciona ao editArea
+    editArea.appendChild(container);
   }
 
-  function saveToFirebase() {
-    const table = document.getElementById('gameTable');
-    const rows = Array.from(table.rows).slice(1);
-    let hasValid = false;
-
-    rows.forEach(row => {
-      const cells = row.querySelectorAll('input[type="text"], textarea');
-      const data = {
-        nome: cells[0].value.trim(),
-        link: cells[1].value.trim(),
-        descricao: cells[2].value.trim(),
-        tags: cells[3].value.trim(),
-        tipo: cells[4].value.trim()
-      };
-      if (!data.nome || !data.link) {
-        console.warn('⚠️ Campos obrigatórios ausentes:', data.nome);
-        return;
-      }
-      hasValid = true;
-      db.collection('games').doc().set(data).then(loadFromFirebase);
-    });
-
-    if (hasValid) showToast('💾 Jogos salvos com sucesso!');
-    else showToast('⚠️ Preencha nome e link!');
+  function getLabelForLink(link) {
+    if (!link) return 'Play';
+    return /\.(pdf|zip|docx?|xlsx?|pptx?|mp3|mp4)$/i.test(link) ? 'Download' : 'Play';
   }
 
+  // Botão Add: salva no Firebase e limpa os campos!
+  function addGame(btn) {
+    const editCard = btn.closest('.edit-card');
+    const nome = editCard.querySelector('.input-nome').value.trim();
+    const descricao = editCard.querySelector('.input-desc').value.trim();
+    const tags = editCard.querySelector('.input-tags').value.trim();
+    const link = editCard.querySelector('.input-link').value.trim();
+    const btnlabel = editCard.querySelector('.input-btnlabel').value.trim();
+    const detalhes = editCard.querySelector('.input-detalhes').value.trim();
+    if (!nome || !link) {
+      showToast('⚠️ Preencha nome e link!');
+      return;
+    }
+    db.collection('games').doc().set({nome, descricao, tags, link, btnlabel, detalhes})
+      .then(() => {
+        showToast('✅ Jogo adicionado com sucesso!');
+        // Limpa todos os campos do card editável
+        editCard.querySelector('.input-nome').value = '';
+        editCard.querySelector('.input-desc').value = '';
+        editCard.querySelector('.input-tags').value = '';
+        editCard.querySelector('.input-link').value = '';
+        editCard.querySelector('.input-detalhes').value = '';
+        editCard.querySelector('.input-btnlabel').value = '';
+        // Limpa preview também
+        const editArea = document.getElementById('editArea');
+        const previewCard = editArea.querySelector('.preview-card');
+        previewCard.querySelector('.preview-title').textContent = 'Game Name';
+        previewCard.querySelector('.preview-desc').textContent = 'Description';
+        previewCard.querySelector('.preview-tags').innerHTML = '';
+        previewCard.querySelector('.preview-link').href = '#';
+        previewCard.querySelector('.preview-link').textContent = 'Play';
+        loadFromFirebase(); // atualiza home
+      });
+  }
+
+  // ---- RESTANTE DA HOME E TAGS (INALTERADO) ----
   function renderCard(g) {
     const card = document.createElement('div');
     card.className = 'card';
-    const isArquivo = g.link && /\.(pdf|zip|docx?|xlsx?|pptx?|mp3|mp4)$/i.test(g.link);
+    
+    const a = document.createElement('a');
+    a.href = g.link;
+    a.textContent = g.btnlabel || 'Play';
+    a.target = '_blank';
+
+    const infoBtn = document.createElement('button');
+    infoBtn.textContent = '?';
+    infoBtn.style.cssText = `
+      background: #eee;
+      border-radius: 50%;
+      border: none;
+      width: 28px;
+      height: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    `;
+
+    const details = document.createElement('div');
+    details.textContent = g.detalhes || 'No extra info.';
+    details.style.cssText = `
+      display: none;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      color: #444;
+    `;
+
+    infoBtn.onclick = () => {
+      details.style.display = (details.style.display === 'none') ? 'block' : 'none';
+    };
+
     const label = isArquivo ? 'Download' : 'Play';
     const a = document.createElement('a');
     a.href = g.link;
@@ -254,6 +384,8 @@
     `;
     card.appendChild(tagContainer);
     card.appendChild(a);
+    card.appendChild(infoBtn);
+    card.appendChild(details);
     document.getElementById('homeGrid').appendChild(card);
   }
 
