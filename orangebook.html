@@ -8,34 +8,73 @@
     body {
       font-family: sans-serif;
       background: #f0f0f0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .container {
-      background: white;
+      margin: 0;
       padding: 2rem;
-      border-radius: 1rem;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-      text-align: center;
+    }
+    .accordion {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    .section {
+      border-bottom: 1px solid #ddd;
+    }
+    .section button {
+      width: 100%;
+      padding: 1rem;
+      background: #fafafa;
+      border: none;
+      text-align: left;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .content {
+      display: none;
+      padding: 0 1rem 1rem 1rem;
     }
     audio {
       width: 100%;
+      margin-bottom: 0.5rem;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Áudio de Exercício</h2>
-    <audio controls>
-      <source src="https://drive.google.com/uc?export=download&id=1g_cBKufHKd_z6a3Z6Y_H4J7YwNM9gcRT" type="audio/m4a">
-      Seu navegador não suporta áudio incorporado.
-    </audio>
+  <h2>Áudios por Página/Exercício</h2>
+  <div class="accordion">
+    <div class="section">
+      <button onclick="toggleSection(this)">Pg.102–103</button>
+      <div class="content">
+        <audio controls><source src="Pg.102%20Ex%20R%20.m4a" type="audio/mp4"></audio>
+        <audio controls><source src="Pg.102%20Ex%20S%20.m4a" type="audio/mp4"></audio>
+        <audio controls><source src="Pg.102%20Ex%20T%20.m4a" type="audio/mp4"></audio>
+        <audio controls><source src="Pg.103%20Ex%20U%20.m4a" type="audio/mp4"></audio>
+      </div>
+    </div>
+    <div class="section">
+      <button onclick="toggleSection(this)">Pg.107–110</button>
+      <div class="content">
+        <audio controls><source src="Pg.107%20Ex%20C%20.m4a" type="audio/mp4"></audio>
+        <audio controls><source src="Pg.108%20Ex%20E%20.m4a" type="audio/mp4"></audio>
+        <audio controls><source src="Pg.110%20Ex%20H%20.m4a" type="audio/mp4"></audio>
+      </div>
+    </div>
+    <div class="section">
+      <button onclick="toggleSection(this)">Pg.113–120</button>
+      <div class="content">
+        <audio controls><source src="Pg.113%20Ex%20J%20.m4a" type="audio/mp4"></audio>
+        <audio controls><source src="Pg.118%20Ex%20O%20.m4a" type="audio/mp4"></audio>
+        <audio controls><source src="Pg.120%20Ex%20Q%20.m4a" type="audio/mp4"></audio>
+      </div>
+    </div>
+    <!-- Mais blocos podem ser adicionados conforme necessário -->
   </div>
-<audio controls>
-  <source src="Pg.52%20Ex%20H%20.m4a" type="audio/mp4">
-  Seu navegador não suporta o elemento de áudio.
-</audio>
+
+  <script>
+    function toggleSection(button) {
+      const content = button.nextElementSibling;
+      content.style.display = content.style.display === "block" ? "none" : "block";
+    }
+  </script>
 </body>
 </html>
