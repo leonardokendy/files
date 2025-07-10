@@ -3,77 +3,184 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Player de Áudio - Google Drive</title>
+  <title>Áudio Book</title>
   <style>
     body {
       font-family: sans-serif;
-      background: #f0f0f0;
+      background: #F25C19;
       margin: 0;
       padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    .accordion {
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    .logo {
+      width: 200px;
+      margin-bottom: 2rem;
+      border-radius: 1rem;
       overflow: hidden;
     }
-    .section {
-      border-bottom: 1px solid #ddd;
+    .search-box {
+      background: #F99F2A;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+      text-align: center;
+      color: white;
     }
-    .section button {
-      width: 100%;
-      padding: 1rem;
-      background: #fafafa;
+    .search-box label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    .search-box select, .search-box button {
+      padding: 0.5rem;
+      font-size: 1rem;
+      margin: 0.5rem;
+      border-radius: 0.5rem;
       border: none;
-      text-align: left;
+    }
+    .search-box button {
+      background: #fff;
+      color: #F25C19;
       font-weight: bold;
       cursor: pointer;
     }
-    .content {
+    .audio-player {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       display: none;
-      padding: 0 1rem 1rem 1rem;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
     }
     audio {
       width: 100%;
-      margin-bottom: 0.5rem;
     }
   </style>
 </head>
 <body>
-  <h2>Áudios por Página/Exercício</h2>
-  <div class="accordion">
-    <div class="section">
-      <button onclick="toggleSection(this)">Pg.102–103</button>
-      <div class="content">
-        <audio controls><source src="Pg.102%20Ex%20R%20.m4a" type="audio/mp4"></audio>
-        <audio controls><source src="Pg.102%20Ex%20S%20.m4a" type="audio/mp4"></audio>
-        <audio controls><source src="Pg.102%20Ex%20T%20.m4a" type="audio/mp4"></audio>
-        <audio controls><source src="Pg.103%20Ex%20U%20.m4a" type="audio/mp4"></audio>
-      </div>
-    </div>
-    <div class="section">
-      <button onclick="toggleSection(this)">Pg.107–110</button>
-      <div class="content">
-        <audio controls><source src="Pg.107%20Ex%20C%20.m4a" type="audio/mp4"></audio>
-        <audio controls><source src="Pg.108%20Ex%20E%20.m4a" type="audio/mp4"></audio>
-        <audio controls><source src="Pg.110%20Ex%20H%20.m4a" type="audio/mp4"></audio>
-      </div>
-    </div>
-    <div class="section">
-      <button onclick="toggleSection(this)">Pg.113–120</button>
-      <div class="content">
-        <audio controls><source src="Pg.113%20Ex%20J%20.m4a" type="audio/mp4"></audio>
-        <audio controls><source src="Pg.118%20Ex%20O%20.m4a" type="audio/mp4"></audio>
-        <audio controls><source src="Pg.120%20Ex%20Q%20.m4a" type="audio/mp4"></audio>
-      </div>
-    </div>
-    <!-- Mais blocos podem ser adicionados conforme necessário -->
+  <img src="Sem%20t%C3%ADtulo.png" alt="Logo da Escola" class="logo">
+
+  <div class="search-box">
+    <label for="pageSelect">PAGE</label>
+    <select id="pageSelect">
+      <option value="">Selecione</option>
+      <option>3</option>
+      <option>5</option>
+      <option>6</option>
+      <option>8</option>
+      <option>16</option>
+      <option>23</option>
+      <option>28</option>
+      <option>29</option>
+      <option>30</option>
+      <option>31</option>
+      <option>34</option>
+      <option>35</option>
+      <option>39</option>
+      <option>41</option>
+      <option>43</option>
+      <option>45</option>
+      <option>49</option>
+      <option>52</option>
+      <option>53</option>
+      <option>58</option>
+      <option>59</option>
+      <option>63</option>
+      <option>66</option>
+      <option>73</option>
+      <option>74</option>
+      <option>77</option>
+      <option>80</option>
+      <option>82</option>
+      <option>83</option>
+      <option>86</option>
+      <option>87</option>
+      <option>89</option>
+      <option>93</option>
+      <option>96</option>
+      <option>99</option>
+      <option>102</option>
+      <option>103</option>
+      <option>107</option>
+      <option>108</option>
+      <option>110</option>
+      <option>113</option>
+      <option>118</option>
+      <option>120</option>
+      <option>123</option>
+      <option>129</option>
+      <option>130</option>
+      <option>132</option>
+      <option>137</option>
+      <option>141</option>
+      <option>143</option>
+      <option>145</option>
+      <option>147</option>
+      <option>150</option>
+      <option>151</option>
+      <option>153</option>
+    </select>
+
+    <label for="exSelect">ACT</label>
+    <select id="exSelect">
+      <option value="">Selecione</option>
+      <option>C</option>
+      <option>D</option>
+      <option>E</option>
+      <option>F</option>
+      <option>G</option>
+      <option>H</option>
+      <option>I</option>
+      <option>J</option>
+      <option>K</option>
+      <option>L</option>
+      <option>M</option>
+      <option>N</option>
+      <option>O</option>
+      <option>P</option>
+      <option>Q</option>
+      <option>R</option>
+      <option>S</option>
+      <option>T</option>
+      <option>U</option>
+      <option>V</option>
+      <option>W</option>
+    </select>
+
+    <br>
+    <button onclick="searchAudio()">Buscar</button>
+  </div>
+
+  <div class="audio-player" id="audioContainer">
+    <p id="audioTitle"></p>
+    <audio controls id="audioElement">
+      <source id="audioSource" src="" type="audio/mp4">
+      Seu navegador não suporta áudio.
+    </audio>
   </div>
 
   <script>
-    function toggleSection(button) {
-      const content = button.nextElementSibling;
-      content.style.display = content.style.display === "block" ? "none" : "block";
+    function searchAudio() {
+      const page = document.getElementById("pageSelect").value;
+      const ex = document.getElementById("exSelect").value;
+      if (!page || !ex) {
+        alert("Por favor, selecione a página e o exercício.");
+        return;
+      }
+      const filename = `Pg.${page}%20Ex%20${ex}%20.m4a`;
+      const audioSource = document.getElementById("audioSource");
+      const audioElement = document.getElementById("audioElement");
+      const audioContainer = document.getElementById("audioContainer");
+      const audioTitle = document.getElementById("audioTitle");
+      audioSource.src = filename;
+      audioElement.load();
+      audioTitle.innerText = `Pg.${page} Ex ${ex}`;
+      audioContainer.style.display = "block";
     }
   </script>
 </body>
