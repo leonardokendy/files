@@ -152,20 +152,20 @@
     const exSelect = document.getElementById("exSelect");
 
     document.addEventListener("DOMContentLoaded", () => {
-  const allPages = Object.keys(audioMap).sort((a, b) => a - b);
-  allPages.forEach(page => {
-    const option = document.createElement("option");
-    option.value = page;
-    option.textContent = page;
-    pageSelect.appendChild(option);
-  });
-});
+      const allPages = Object.keys(audioMap).sort((a, b) => a - b);
+      allPages.forEach(page => {
+        const option = document.createElement("option");
+        option.value = page;
+        option.textContent = page;
+        pageSelect.appendChild(option);
+      });
+    });
 
     function updateExercises() {
       const selectedPage = pageSelect.value;
       exSelect.innerHTML = '<option value="">Selecione</option>';
       if (audioMap[selectedPage]) {
-        audioMap[selectedPage].forEach(letter => {
+        Object.keys(audioMap[selectedPage]).forEach(letter => {
           const opt = document.createElement("option");
           opt.value = letter;
           opt.textContent = letter;
@@ -194,4 +194,3 @@
   </script>
 </body>
 </html>
-
