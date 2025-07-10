@@ -63,93 +63,17 @@
   </style>
 </head>
 <body>
-  <img src="Sem%20t%C3%ADtulo.png" alt="Logo da Escola" class="logo">
+  <img src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png" alt="Logo da Escola" class="logo">
 
   <div class="search-box">
     <label for="pageSelect">PAGE</label>
-    <select id="pageSelect">
+    <select id="pageSelect" onchange="updateExercises()">
       <option value="">Selecione</option>
-      <option>3</option>
-      <option>5</option>
-      <option>6</option>
-      <option>8</option>
-      <option>16</option>
-      <option>23</option>
-      <option>28</option>
-      <option>29</option>
-      <option>30</option>
-      <option>31</option>
-      <option>34</option>
-      <option>35</option>
-      <option>39</option>
-      <option>41</option>
-      <option>43</option>
-      <option>45</option>
-      <option>49</option>
-      <option>52</option>
-      <option>53</option>
-      <option>58</option>
-      <option>59</option>
-      <option>63</option>
-      <option>66</option>
-      <option>73</option>
-      <option>74</option>
-      <option>77</option>
-      <option>80</option>
-      <option>82</option>
-      <option>83</option>
-      <option>86</option>
-      <option>87</option>
-      <option>89</option>
-      <option>93</option>
-      <option>96</option>
-      <option>99</option>
-      <option>102</option>
-      <option>103</option>
-      <option>107</option>
-      <option>108</option>
-      <option>110</option>
-      <option>113</option>
-      <option>118</option>
-      <option>120</option>
-      <option>123</option>
-      <option>129</option>
-      <option>130</option>
-      <option>132</option>
-      <option>137</option>
-      <option>141</option>
-      <option>143</option>
-      <option>145</option>
-      <option>147</option>
-      <option>150</option>
-      <option>151</option>
-      <option>153</option>
     </select>
 
     <label for="exSelect">ACT</label>
     <select id="exSelect">
       <option value="">Selecione</option>
-      <option>C</option>
-      <option>D</option>
-      <option>E</option>
-      <option>F</option>
-      <option>G</option>
-      <option>H</option>
-      <option>I</option>
-      <option>J</option>
-      <option>K</option>
-      <option>L</option>
-      <option>M</option>
-      <option>N</option>
-      <option>O</option>
-      <option>P</option>
-      <option>Q</option>
-      <option>R</option>
-      <option>S</option>
-      <option>T</option>
-      <option>U</option>
-      <option>V</option>
-      <option>W</option>
     </select>
 
     <br>
@@ -165,9 +89,49 @@
   </div>
 
   <script>
+    const audioMap = {
+      "3": ["C"], "5": ["E"], "6": ["G"], "8": ["K"], "16": ["R", "S"],
+      "23": ["G"], "28": ["K"], "29": ["M"], "30": ["O"], "31": ["P"],
+      "34": ["C"], "35": ["E"], "39": ["L"], "41": ["O"], "43": ["R"],
+      "45": ["D"], "49": ["E", "F"], "52": ["H"], "53": ["J", "K"], "58": ["D"],
+      "59": ["E"], "63": ["J"], "66": ["N"], "73": ["U", "V"], "74": ["W"],
+      "77": ["D"], "80": ["E"], "82": ["G"], "83": ["I"], "86": ["N"], "87": ["P"],
+      "89": ["R"], "93": ["E"], "96": ["J"], "99": ["N"], "102": ["R", "S", "T"],
+      "103": ["U"], "107": ["C"], "108": ["E"], "110": ["H"], "113": ["J"],
+      "118": ["O"], "120": ["Q"], "123": ["D"], "129": ["G"], "130": ["I"],
+      "132": ["L"], "137": ["P"], "141": ["D"], "143": ["F"], "145": ["J"],
+      "147": ["M"], "150": ["P"], "151": ["R", "S"], "153": ["E"]
+    };
+
+    const pageSelect = document.getElementById("pageSelect");
+    const exSelect = document.getElementById("exSelect");
+
+    document.addEventListener("DOMContentLoaded", () => {
+  const allPages = Object.keys(audioMap).sort((a, b) => a - b);
+  allPages.forEach(page => {
+    const option = document.createElement("option");
+    option.value = page;
+    option.textContent = page;
+    pageSelect.appendChild(option);
+  });
+});
+
+    function updateExercises() {
+      const selectedPage = pageSelect.value;
+      exSelect.innerHTML = '<option value="">Selecione</option>';
+      if (audioMap[selectedPage]) {
+        audioMap[selectedPage].forEach(letter => {
+          const opt = document.createElement("option");
+          opt.value = letter;
+          opt.textContent = letter;
+          exSelect.appendChild(opt);
+        });
+      }
+    }
+
     function searchAudio() {
-      const page = document.getElementById("pageSelect").value;
-      const ex = document.getElementById("exSelect").value;
+      const page = pageSelect.value;
+      const ex = exSelect.value;
       if (!page || !ex) {
         alert("Por favor, selecione a página e o exercício.");
         return;
