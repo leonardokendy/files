@@ -28,24 +28,19 @@
       margin-bottom: 2rem;
       text-align: center;
       color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
     }
     .search-box label {
-      display: block;
-      margin-top: 1rem;
       font-weight: bold;
     }
-    .search-box select, .search-box button {
+    .search-box select {
       padding: 0.5rem;
       font-size: 1rem;
-      margin: 0.5rem;
       border-radius: 0.5rem;
       border: none;
-    }
-    .search-box button {
-      background: #fff;
-      color: #F25C19;
-      font-weight: bold;
-      cursor: pointer;
     }
     .audio-player {
       background: #fff;
@@ -59,6 +54,20 @@
     }
     audio {
       width: 100%;
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      background: #333;
+      color: #fff;
+      padding: 1rem 2rem;
+      border-radius: 0.5rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 1000;
+    }
+    .toast.show {
+      opacity: 1;
     }
   </style>
 </head>
@@ -75,9 +84,6 @@
     <select id="exSelect">
       <option value="">Selecione</option>
     </select>
-
-    <br>
-    <button onclick="searchAudio()">Buscar</button>
   </div>
 
   <div class="audio-player" id="audioContainer">
@@ -88,9 +94,10 @@
     </audio>
   </div>
 
+  <div class="toast" id="toast">Carregando...</div>
+
   <script>
     const audioMap = {
-  "01": { "T1": "01%20Track%2001%201.m4a", "T2": "01%20Track%2001.m4a" },
   "3": { "C": "Pg.3%20Ex%20C.m4a" },
   "5": { "E": "Pg.5%20Ex%20E.m4a" },
   "6": { "G": "Pg.6%20Ex%20G.m4a" },
@@ -145,11 +152,19 @@
   "147": { "M": "Pg.147%20Ex%20M%20.m4a" },
   "150": { "P": "Pg.150%20Ex%20P%20.m4a" },
   "151": { "R": "Pg.151%20Ex%20R%20.m4a", "S": "Pg.151%20Ex%20S%20.m4a" },
-  "153": { "E": "Pg.153%20Ex%20E%20.m4a" }
+  "153": { "E": "Pg.153%20Ex%20E%20.m4a" },
+  "01": { "T1": "01%20Track%2001.m4a", "T2": "01%20Track%2001%201.m4a" }
 };
 
     const pageSelect = document.getElementById("pageSelect");
     const exSelect = document.getElementById("exSelect");
+    const toast = document.getElementById("toast");
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2000);
+    }
 
     document.addEventListener("DOMContentLoaded", () => {
       const allPages = Object.keys(audioMap).sort((a, b) => a - b);
@@ -172,22 +187,32 @@
           exSelect.appendChild(opt);
         });
       }
+
+      exSelect.onchange = () => {
+        if (pageSelect.value && exSelect.value) {
+          searchAudio();
+        }
+      };
     }
 
     function searchAudio() {
       const page = pageSelect.value;
       const ex = exSelect.value;
-      if (!page || !ex) {
-        alert("Por favor, selecione a página e o exercício.");
-        return;
-      }
+      if (!page || !ex) return;
+
       const filename = `https://github.com/leonardokendy/files/raw/orangebook/${audioMap[page][ex]}`;
       const audioSource = document.getElementById("audioSource");
       const audioElement = document.getElementById("audioElement");
       const audioContainer = document.getElementById("audioContainer");
       const audioTitle = document.getElementById("audioTitle");
+
+      showToast("Carregando áudio...");
+
       audioSource.src = filename;
       audioElement.load();
+      audioElement.oncanplaythrough = () => showToast("Áudio pronto!");
+      audioElement.onerror = () => showToast("Erro ao carregar o áudio.");
+
       audioTitle.innerText = `Pg.${page} Ex ${ex}`;
       audioContainer.style.display = "block";
     }
