@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Improved Mic Interface</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .mic-button {
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      border: none;
+      font-size: 1.2rem;
+      color: white;
+      background-color: red;
+      margin-bottom: 1rem;
+      transition: background 0.3s;
+    }
+
+    .mic-button.listening {
+      background-color: green;
+    }
+
+    #heardText {
+      font-size: 1.5rem;
+      margin: 1rem 0;
+      min-height: 2rem;
+    }
+
+    #toast {
+      position: fixed;
+      top: 10px;
+      background: #ff69b4;
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border-radius: 20px;
+      font-weight: bold;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      z-index: 999;
+    }
+
+    #hint {
+      margin-top: 2rem;
+      font-style: italic;
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+  <button id="micBtn" class="mic-button">Start Mic</button>
+  <div id="heardText">🎧 Waiting...</div>
+  <div id="hint">💡 Try saying: "jump"</div>
+  <div id="toast">Toast Message</div>
+
+  <script>
+    const micBtn = document.getElementById("micBtn");
+    const heardText = document.getElementById("heardText");
+    const toast = document.getElementById("toast");
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.continuous = false;
+
+    let listening = false;
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.style.opacity = 1;
+      setTimeout(() => {
+        toast.style.opacity = 0;
+      }, 2000);
+    }
+
+    function startMic() {
+      try {
+        recognition.start();
+        micBtn.classList.add("listening");
+        micBtn.textContent = "Listening...";
+      } catch (err) {
+        showToast("Mic already active");
+      }
+    }
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript.toLowerCase();
+      heardText.textContent = `Heard: "${transcript}"`;
+
+      // Here you handle commands:
+      if (transcript.includes("jump")) {
+        showToast("✅ Command recognized: JUMP!");
+        // trigger your action
+      } else {
+        showToast("❌ Command not recognized");
+      }
+
+      restartMic();
+    };
+
+    recognition.onend = () => {
+      if (listening) restartMic();
+    };
+
+    recognition.onerror = (event) => {
+      showToast("Mic Error: " + event.error);
+      micBtn.classList.remove("listening");
+      micBtn.textContent = "Start Mic";
+    };
+
+    function restartMic() {
+      setTimeout(() => {
+        if (listening) startMic();
+      }, 300); // short delay before restart
+    }
+
+    micBtn.onclick = () => {
+      listening = !listening;
+      if (listening) {
+        startMic();
+        showToast("🎤 Mic activated");
+      } else {
+        recognition.stop();
+        micBtn.classList.remove("listening");
+        micBtn.textContent = "Start Mic";
+        showToast("🎤 Mic stopped");
+      }
+    };
+  </script>
+</body>
+</html>
