@@ -97,13 +97,15 @@
     .modal-senha input[type="password"] {margin-top: 1rem; margin-bottom: 1rem; padding: 0.6rem; font-size: 1.1rem; border-radius: 8px; border: 1px solid #ccc; width: 90%;}
     .modal-senha button {background: var(--secondary-color); color: #fff; border: none; border-radius: 6px; padding: 0.5rem 1.1rem; font-size: 1.07rem; cursor: pointer;}
     .modal-senha button:active {background: #357abd;}
-    @keyframes pop {0%{transform:scale(0.8);}100%{transform:scale(1);}}
     .modal-senha .msg-erro { color: #d13c3c; font-size: .97rem; }
+    @keyframes pop {0%{transform:scale(0.8);}100%{transform:scale(1);}}
     @media (max-width: 500px) {.modal-senha{min-width:160px;}}
+
+    /* --- Alteração importante: thumbnail SEMPRE ao lado do texto, também no mobile --- */
     @media (max-width: 600px) {
-      .event-card {flex-direction: column; text-align: center; align-items: center;}
-      .event-card img {margin-right: 0;}
-      .event-card-content {text-align: center;}
+      .event-card {flex-direction: row; text-align: left; align-items: flex-start;}
+      .event-card img {margin-right: 8px; margin-bottom: 0;}
+      .event-card-content {text-align: left;}
     }
   </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -289,11 +291,15 @@
     if (id === "calendario") gerarCalendario();
   }
 
-  // --- THUMBNAIL NO CARD ---
+  // --- THUMBNAIL NO CARD + ORDEM POR DATA MAIS PRÓXIMA ---
   function renderizarEventos(containerId = 'lista-eventos', highlightId = null) {
     const container = document.getElementById(containerId);
     container.innerHTML = '';
-    for (const [id, e] of Object.entries(eventos)) {
+    // Ordenar eventos por data (próximos primeiros)
+    const eventosOrdenados = Object.entries(eventos)
+      .filter(([id, e]) => e.data) // Só eventos com data
+      .sort((a, b) => new Date(a[1].data) - new Date(b[1].data));
+    for (const [id, e] of eventosOrdenados) {
       const div = document.createElement('div');
       div.className = 'event-card';
       if (highlightId === id) div.classList.add('highlight');
@@ -418,19 +424,21 @@
     if (eventosDoMes.length === 0) {
       containerCards.innerHTML += '<p>Nenhum evento neste mês.</p>';
     } else {
-      eventosDoMes.forEach(([id, e]) => {
-        const eventDiv = document.createElement('div');
-        eventDiv.className = 'event-card';
-        eventDiv.innerHTML = `
-          <img src="${e.imagem}" alt="${e.titulo}" />
-          <div class="event-card-content">
-            <h3>${e.titulo}</h3>
-            <div class="event-date">${formatarData(e.data)}</div>
-            <button onclick="mostrarEvento('${id}')">Ver mais</button>
-          </div>
-        `;
-        containerCards.appendChild(eventDiv);
-      });
+      eventosDoMes
+        .sort((a, b) => new Date(a[1].data) - new Date(b[1].data)) // ordenar por data aqui também!
+        .forEach(([id, e]) => {
+          const eventDiv = document.createElement('div');
+          eventDiv.className = 'event-card';
+          eventDiv.innerHTML = `
+            <img src="${e.imagem}" alt="${e.titulo}" />
+            <div class="event-card-content">
+              <h3>${e.titulo}</h3>
+              <div class="event-date">${formatarData(e.data)}</div>
+              <button onclick="mostrarEvento('${id}')">Ver mais</button>
+            </div>
+          `;
+          containerCards.appendChild(eventDiv);
+        });
     }
   }
 </script>
