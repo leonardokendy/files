@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Portal de Eventos - Spring School</title>
-<style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Portal de Eventos - Spring School</title>
+  <style>
     :root {
       --primary-color: #ff69b4;
       --secondary-color: #4a90e2;
@@ -14,7 +13,6 @@
       --card-shadow: 0 1px 3px rgba(0,0,0,0.1);
       --card-hover-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
-
     body {
       font-family: 'Segoe UI', sans-serif;
       background: var(--background);
@@ -22,7 +20,6 @@
       margin: 0;
       transition: all 0.3s ease;
     }
-
     header {
       background: var(--primary-color);
       color: white;
@@ -30,17 +27,14 @@
       text-align: center;
       position: relative;
     }
-
     .logo {
       height: 40px;
       transition: all 0.3s ease;
     }
-
     header h1 {
       font-size: 1.2rem;
       margin: 0.5rem 0;
     }
-
     nav {
       display: flex;
       justify-content: flex-start;
@@ -50,7 +44,6 @@
       overflow-x: auto;
       transition: all 0.3s ease;
     }
-
     nav button {
       padding: 0.4rem 0.8rem;
       border: none;
@@ -62,23 +55,19 @@
       font-size: 0.9rem;
       min-width: 80px;
     }
-
     nav button.active {
       background: var(--secondary-color);
       color: white;
     }
-
     nav button:hover {
       background: #cde4ff;
     }
-
     .container {
       padding: 0.5rem;
       max-width: 1000px;
       margin: auto;
       transition: all 0.3s ease;
     }
-
     .event-card {
       display: flex;
       flex-direction: column;
@@ -91,16 +80,13 @@
       box-shadow: var(--card-shadow);
       transition: all 0.3s ease;
     }
-
     .event-card.highlight {
       border: 3px solid var(--secondary-color);
     }
-
     .event-card:hover {
       transform: scale(1.01);
       box-shadow: var(--card-hover-shadow);
     }
-
     .event-card img {
       width: 80px;
       height: 80px;
@@ -109,18 +95,15 @@
       margin-bottom: 0.5rem;
       transition: all 0.3s ease;
     }
-
     .event-card h3 {
       margin: 0 0 0.3rem;
       font-size: 1rem;
     }
-
     .event-card .event-date {
       color: #666;
       font-size: 0.9rem;
       margin-bottom: 0.5rem;
     }
-
     .event-card button {
       background: var(--secondary-color);
       color: white;
@@ -132,26 +115,21 @@
       transition: all 0.3s ease;
       font-size: 0.9rem;
     }
-
     .event-card button:hover {
       background: #357abd;
     }
-
     #event-page img {
       width: 100%;
       border-radius: 10px;
       margin-bottom: 1rem;
     }
-
     #event-page h2 {
       font-size: 1.3rem;
     }
-
     #event-page p, #event-page ul {
       font-size: 0.95rem;
       line-height: 1.6;
     }
-
     .calendar {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -161,7 +139,6 @@
       border-radius: 10px;
       margin-top: 1rem;
     }
-
     .weekday, .day {
       text-align: center;
       padding: 0.3rem;
@@ -169,11 +146,9 @@
       font-size: 0.8rem;
       min-height: 25px;
     }
-
     .weekday {
       font-weight: bold;
     }
-
     .day {
       background: #eee;
       border-radius: 5px;
@@ -181,23 +156,19 @@
       align-items: center;
       justify-content: center;
     }
-
     .event-day {
       background: #ffd700;
       font-weight: bold;
       cursor: pointer;
     }
-
     .event-day:hover {
       background: #ffed4e;
     }
-
     form label {
       display: block;
       margin-top: 1rem;
       font-weight: bold;
     }
-
     form input, form textarea, form select {
       width: 100%;
       padding: 0.4rem;
@@ -207,7 +178,6 @@
       box-sizing: border-box;
       font-size: 0.9rem;
     }
-
     form button {
       margin-top: 1rem;
       background: #28a745;
@@ -219,22 +189,18 @@
       transition: all 0.3s ease;
       font-size: 0.9rem;
     }
-
     form button:hover {
       background: #218838;
     }
-
     .calendar-controls {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1rem;
     }
-
     .calendar-controls h3 {
       font-size: 1rem;
     }
-
     .calendar-controls button {
       background: var(--secondary-color);
       color: white;
@@ -244,18 +210,15 @@
       cursor: pointer;
       font-size: 14px;
     }
-
     .calendar-layout {
       display: flex;
       flex-direction: column;
       gap: 1rem;
     }
-
     .calendar-section,
     .events-section {
       min-width: auto;
     }
-
     footer {
       text-align: center;
       padding: 1rem;
@@ -263,358 +226,344 @@
       color: #777;
       margin-top: 2rem;
     }
-
     .hidden {
       display: none;
     }
-
-    /* Responsive breakpoints */
     @media (max-width: 768px) {
       .calendar-layout {
         flex-direction: column;
       }
-      
       .calendar-section,
       .events-section {
         min-width: auto;
       }
-      
       nav {
         justify-content: flex-start;
       }
     }
   </style>
+  <!-- Firebase SDKs via CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <header>
-<img alt="Logo" class="logo" src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png"/>
-<h1>Portal de Eventos</h1>
+  <img alt="Logo" class="logo" src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png"/>
+  <h1>Portal de Eventos</h1>
 </header>
 <nav>
-<button class="active" onclick="trocarAba('home')">🏠 Início</button>
-<button onclick="trocarAba('editar')">✏️ Editar</button>
-<button onclick="trocarAba('calendario')">📅 Calendário</button>
-<button onclick="trocarAba('galeria')">🖼️ Galeria</button></nav>
+  <button class="active" onclick="trocarAba('home', event)">🏠 Início</button>
+  <button onclick="trocarAba('editar', event)">✏️ Editar</button>
+  <button onclick="trocarAba('calendario', event)">📅 Calendário</button>
+  <button onclick="trocarAba('galeria', event)">🖼️ Galeria</button>
+</nav>
 <div class="container" id="aba-home">
-<h2>Next Events</h2>
-<div id="lista-eventos"></div>
+  <h2>Next Events</h2>
+  <div id="lista-eventos"></div>
 </div>
 <div class="container hidden" id="aba-evento">
-<div id="event-page"></div>
+  <div id="event-page"></div>
 </div>
 <div class="container hidden" id="aba-editar">
-<h2>Adicionar / Editar Evento</h2>
-<button onclick="novoEvento()">+ Novo Evento</button>
-<label for="eventoSelecionado">Selecionar evento existente</label>
-<select id="eventoSelecionado" onchange="carregarEventoNoFormulario()">
-<option value="">-- Escolha um evento --</option>
-</select>
-<form onsubmit="salvarEvento(event)">
-<label for="id">ID do Evento</label>
-<input id="id" required="" type="text"/>
-<label for="titulo">Título</label>
-<input id="titulo" required="" type="text"/>
-<label for="data">Data</label>
-<input id="data" required="" type="date"/>
-<label for="imagem">URL da Imagem</label>
-<input id="imagem" type="text"/>
-<label for="descricao">Descrição</label>
-<textarea id="descricao" rows="6" placeholder="Digite a descrição do evento..."></textarea>
-<button type="submit">Salvar</button>
-</form>
+  <h2>Adicionar / Editar Evento</h2>
+  <button onclick="novoEvento()">+ Novo Evento</button>
+  <label for="eventoSelecionado">Selecionar evento existente</label>
+  <select id="eventoSelecionado" onchange="carregarEventoNoFormulario()">
+    <option value="">-- Escolha um evento --</option>
+  </select>
+  <form onsubmit="salvarEvento(event)">
+    <label for="id">ID do Evento</label>
+    <input id="id" required type="text"/>
+    <label for="titulo">Título</label>
+    <input id="titulo" required type="text"/>
+    <label for="data">Data</label>
+    <input id="data" required type="date"/>
+    <label for="imagem">URL da Imagem</label>
+    <input id="imagem" type="text"/>
+    <label for="descricao">Descrição</label>
+    <textarea id="descricao" rows="6" placeholder="Digite a descrição do evento..."></textarea>
+    <button type="submit">Salvar</button>
+  </form>
 </div>
 <div class="container hidden" id="aba-calendario">
-<div class="calendar-layout">
-<div class="calendar-section">
-<div class="calendar-controls">
-<button onclick="mudarMes(-1)">←</button>
-<h3 id="mesAtual"></h3>
-<button onclick="mudarMes(1)">→</button>
-</div>
-<div class="calendar" id="diasCalendario">
-<div class="weekday">Dom</div><div class="weekday">Seg</div><div class="weekday">Ter</div>
-<div class="weekday">Qua</div><div class="weekday">Qui</div><div class="weekday">Sex</div><div class="weekday">Sáb</div>
-</div>
-</div>
-<div class="events-section" id="eventosDoMes">
-<h3>Eventos deste mês</h3>
-</div>
-</div>
+  <div class="calendar-layout">
+    <div class="calendar-section">
+      <div class="calendar-controls">
+        <button onclick="mudarMes(-1)">←</button>
+        <h3 id="mesAtual"></h3>
+        <button onclick="mudarMes(1)">→</button>
+      </div>
+      <div class="calendar" id="diasCalendario">
+        <!-- Dias da semana e dias do mês são inseridos por JS -->
+      </div>
+    </div>
+    <div class="events-section" id="eventosDoMes">
+      <h3>Eventos deste mês</h3>
+    </div>
+  </div>
 </div>
 <div class="container hidden" id="aba-galeria">
-<h2>Galeria de Fotos dos Eventos</h2>
-<label for="seletorGaleria">Escolha um evento</label>
-<select id="seletorGaleria" onchange="mostrarGaleria()">
-<option value="">-- Selecione um evento --</option>
-</select>
-<div id="galeriaFotos" style="margin-top:1rem; display:flex; flex-wrap:wrap; gap:10px;"></div>
-</div><footer>© 2025 Spring School</footer>
+  <h2>Galeria de Fotos dos Eventos</h2>
+  <label for="seletorGaleria">Escolha um evento</label>
+  <select id="seletorGaleria" onchange="mostrarGaleria()">
+    <option value="">-- Selecione um evento --</option>
+  </select>
+  <div id="galeriaFotos" style="margin-top:1rem; display:flex; flex-wrap:wrap; gap:10px;"></div>
+</div>
+<footer>© 2025 Spring School</footer>
 <script>
-let eventos = {};
-
-// Inicializar eventos padrão
-if (localStorage.getItem("eventos")) {
-  eventos = JSON.parse(localStorage.getItem("eventos"));
-} else {
-  eventos = {
-    "emp-summit": {
-      titulo: "Empreenda Summit 2025",
-      data: "2025-08-20",
-      imagem: "https://debatable-byleo.web.app/marketing/empreendasummit.jpg",
-      descricao: "Uma imersão para empreendedores de todas as idades, com palestras, painéis e mentorias.\n\nData: 20 de agosto\nLocal: Spring School Hall"
-    },
-    "obufuji": {
-      titulo: "Festival ObuFuji",
-      data: "2025-09-10",
-      imagem: "https://debatable-byleo.web.app/marketing/obufuji.jpg",
-      descricao: "Venha celebrar a cultura japonesa com comidas típicas, apresentações e oficinas!\n\nTraga sua família!"
-    }
+  // Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyAsYg7ZTHXD_a6d_icFLw9e5y0jSTfXBi0",
+    authDomain: "spring-stage-by-leo.firebaseapp.com",
+    projectId: "spring-stage-by-leo",
+    storageBucket: "spring-stage-by-leo.firebasestorage.app",
+    messagingSenderId: "215839443924",
+    appId: "1:215839443924:web:16a9fae4a0a5da76f16441",
+    measurementId: "G-JEE5SLV9YP"
   };
-  salvarNoLocalStorage();
-}
 
-function salvarNoLocalStorage() {
-  localStorage.setItem("eventos", JSON.stringify(eventos));
-}
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-function formatarData(dataString) {
-  const data = new Date(dataString);
-  return data.toLocaleDateString('pt-BR', { 
-    day: '2-digit', 
-    month: '2-digit', 
-    year: 'numeric' 
-  });
-}
+  let eventos = {};
 
-function trocarAba(id) {
-  // Remover classe active de todos os botões
-  document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
-  
-  // Esconder todas as abas
-  document.querySelectorAll("[id^='aba-']").forEach(div => div.classList.add("hidden"));
-  
-  // Mostrar aba selecionada
-  document.getElementById("aba-" + id).classList.remove("hidden");
-  
-  // Adicionar classe active ao botão clicado
-  event.target.classList.add("active");
-  
-  // Executar funções específicas da aba
-  if (id === "home") renderizarEventos();
-  if (id === "editar") atualizarDropdown();
-  if (id === "calendario") gerarCalendario();
-}
+  // --- FUNÇÕES FIRESTORE ---
 
-function renderizarEventos(containerId = 'lista-eventos', highlightId = null) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = '';
-  
-  for (const [id, e] of Object.entries(eventos)) {
-    const div = document.createElement('div');
-    div.className = 'event-card';
-    if (highlightId === id) div.classList.add('highlight');
-    
-    div.innerHTML = `
-      <img src="${e.imagem}" alt="${e.titulo}" />
-      <h3>${e.titulo}</h3>
-      <div class="event-date">${formatarData(e.data)}</div>
-      <button onclick="mostrarEvento('${id}')">Ver mais</button>
-    `;
-    
-    container.appendChild(div);
+  // Ouvir eventos em tempo real
+  function listenToEventos() {
+    db.collection("eventos").onSnapshot((snapshot) => {
+      eventos = {};
+      snapshot.forEach(doc => {
+        eventos[doc.id] = doc.data();
+      });
+      renderizarEventos();
+      gerarCalendario();
+      atualizarDropdown();
+      atualizarGaleria();
+    });
   }
-}
 
-function mostrarEvento(id) {
-  const e = eventos[id];
-  if (!e) return;
-  
-  trocarAba('evento');
-  // Converter quebras de linha para HTML
-  const descricaoHtml = e.descricao.replace(/\n/g, '<br>');
-  
-  document.getElementById('event-page').innerHTML = `
-    <h2>${e.titulo}</h2>
-    <img src="${e.imagem}" alt="${e.titulo}" />
-    <p><strong>Data:</strong> ${formatarData(e.data)}</p>
-    <p>${descricaoHtml}</p>
-  `;
-}
-
-function novoEvento() {
-  document.getElementById('id').value = '';
-  document.getElementById('titulo').value = '';
-  document.getElementById('data').value = '';
-  document.getElementById('imagem').value = '';
-  document.getElementById('descricao').value = '';
-  document.getElementById('eventoSelecionado').value = '';
-}
-
-function atualizarDropdown() {
-  const select = document.getElementById('eventoSelecionado');
-  select.innerHTML = '<option value="">-- Escolha um evento --</option>';
-  
-  for (const id in eventos) {
-    const option = document.createElement('option');
-    option.value = id;
-    option.textContent = `${id} - ${eventos[id].titulo}`;
-    select.appendChild(option);
+  // Salvar/editar evento no Firestore
+  function salvarEvento(ev) {
+    ev.preventDefault();
+    const id = document.getElementById('id').value.trim();
+    if(!id) { alert("ID é obrigatório!"); return; }
+    const evento = {
+      titulo: document.getElementById('titulo').value,
+      data: document.getElementById('data').value,
+      imagem: document.getElementById('imagem').value,
+      descricao: document.getElementById('descricao').value
+    };
+    db.collection("eventos").doc(id).set(evento)
+      .then(() => {
+        alert('Evento salvo!');
+        trocarAba('home');
+      })
+      .catch((e) => alert("Erro ao salvar: " + e));
   }
-}
 
-function carregarEventoNoFormulario() {
-  const id = document.getElementById('eventoSelecionado').value;
-  if (!eventos[id]) return;
-  
-  const e = eventos[id];
-  document.getElementById('id').value = id;
-  document.getElementById('titulo').value = e.titulo;
-  document.getElementById('data').value = e.data;
-  document.getElementById('imagem').value = e.imagem;
-  document.getElementById('descricao').value = e.descricao;
-}
+  // --- FUNÇÕES DE INTERFACE (as mesmas do seu código original) ---
 
-function salvarEvento(ev) {
-  ev.preventDefault();
-  
-  const id = document.getElementById('id').value.trim();
-  eventos[id] = {
-    titulo: document.getElementById('titulo').value,
-    data: document.getElementById('data').value,
-    imagem: document.getElementById('imagem').value,
-    descricao: document.getElementById('descricao').value
-  };
-  
-  salvarNoLocalStorage();
-  alert('Evento salvo com sucesso!');
-  trocarAba('home');
-}
-
-// Variáveis do calendário
-let mesSelecionado = new Date().getMonth();
-let anoSelecionado = new Date().getFullYear();
-
-function mudarMes(d) {
-  mesSelecionado += d;
-  if (mesSelecionado > 11) { 
-    mesSelecionado = 0; 
-    anoSelecionado++; 
+  function formatarData(dataString) {
+    if(!dataString) return "";
+    const data = new Date(dataString);
+    return data.toLocaleDateString('pt-BR', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric' 
+    });
   }
-  if (mesSelecionado < 0) { 
-    mesSelecionado = 11; 
-    anoSelecionado--; 
-  }
-  gerarCalendario();
-}
 
-function gerarCalendario() {
-  const containerDias = document.getElementById('diasCalendario');
-  const containerMes = document.getElementById('mesAtual');
-  const containerCards = document.getElementById('eventosDoMes');
-  
-  // Limpar conteúdo anterior
-  containerDias.innerHTML = '';
-  containerCards.innerHTML = '<h3>Eventos deste mês</h3>';
-  
-  // Adicionar cabeçalhos dos dias da semana
-  const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-  diasSemana.forEach(dia => {
-    const div = document.createElement('div');
-    div.className = 'weekday';
-    div.textContent = dia;
-    containerDias.appendChild(div);
-  });
-  
-  // Definir nome do mês
-  const nomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  containerMes.textContent = `${nomes[mesSelecionado]} ${anoSelecionado}`;
-  
-  // Calcular primeiro dia e total de dias do mês
-  const primeiroDia = new Date(anoSelecionado, mesSelecionado, 1).getDay();
-  const diasNoMes = new Date(anoSelecionado, mesSelecionado + 1, 0).getDate();
-  
-  // Adicionar espaços em branco para o primeiro dia
-  for (let i = 0; i < primeiroDia; i++) {
-    containerDias.appendChild(document.createElement('div'));
+  function trocarAba(id, evt) {
+    document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
+    document.querySelectorAll("[id^='aba-']").forEach(div => div.classList.add("hidden"));
+    document.getElementById("aba-" + id).classList.remove("hidden");
+    if(evt) evt.target.classList.add("active");
+    if (id === "home") renderizarEventos();
+    if (id === "editar") atualizarDropdown();
+    if (id === "calendario") gerarCalendario();
+    if (id === "galeria") atualizarGaleria();
   }
-  
-  // Adicionar dias do mês
-  for (let dia = 1; dia <= diasNoMes; dia++) {
-    const dataStr = `${anoSelecionado}-${String(mesSelecionado + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
-    const eventoId = Object.keys(eventos).find(id => eventos[id].data === dataStr);
-    
-    const div = document.createElement('div');
-    div.className = eventoId ? 'day event-day' : 'day';
-    div.textContent = dia;
-    
-    if (eventoId) {
-      div.onclick = () => {
-        const eventosDoDia = Object.entries(eventos).filter(([id, ev]) => ev.data === dataStr);
-        const container = document.getElementById('eventosDoMes');
-        container.innerHTML = `<h3>Eventos em ${dia}/${mesSelecionado + 1}/${anoSelecionado}</h3>`;
-        
-        eventosDoDia.forEach(([id, e]) => {
-          const eventDiv = document.createElement('div');
-          eventDiv.className = 'event-card highlight';
-          eventDiv.innerHTML = `
-            <img src="${e.imagem}" alt="${e.titulo}" />
-            <h3>${e.titulo}</h3>
-            <div class="event-date">${formatarData(e.data)}</div>
-            <button onclick="mostrarEvento('${id}')">Ver mais</button>`;
-          container.appendChild(eventDiv);
-        });
-      };
-    }
-    
-    containerDias.appendChild(div);
-  }
-  
-  // Mostrar eventos do mês atual
-  const eventosDoMes = Object.entries(eventos).filter(([id, ev]) => {
-    const dataEvento = new Date(ev.data);
-    return dataEvento.getMonth() === mesSelecionado && dataEvento.getFullYear() === anoSelecionado;
-  });
-  
-  if (eventosDoMes.length === 0) {
-    containerCards.innerHTML += '<p>Nenhum evento neste mês.</p>';
-  } else {
-    eventosDoMes.forEach(([id, e]) => {
-      const eventDiv = document.createElement('div');
-      eventDiv.className = 'event-card';
-      eventDiv.innerHTML = `
+
+  function renderizarEventos(containerId = 'lista-eventos', highlightId = null) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    for (const [id, e] of Object.entries(eventos)) {
+      const div = document.createElement('div');
+      div.className = 'event-card';
+      if (highlightId === id) div.classList.add('highlight');
+      div.innerHTML = `
         <img src="${e.imagem}" alt="${e.titulo}" />
         <h3>${e.titulo}</h3>
         <div class="event-date">${formatarData(e.data)}</div>
-        <button onclick="mostrarEvento('${id}')">Ver mais</button>`;
-      containerCards.appendChild(eventDiv);
-    });
+        <button onclick="mostrarEvento('${id}')">Ver mais</button>
+      `;
+      container.appendChild(div);
+    }
   }
-}
 
-// Inicializar aplicação
-document.addEventListener("DOMContentLoaded", () => {
-  renderizarEventos();
-  gerarCalendario();
-});
-
-// Função para copiar link direto para a aba Evento com ID
-function copiarLinkEvento(id) {
-  const url = `${location.origin}${location.pathname}#evento=${id}`;
-  navigator.clipboard.writeText(url).then(() => {
-    alert("Link copiado para a área de transferência!\n" + url);
-  });
-}
-
-// Ao carregar a página, se houver hash #evento=ID, ir direto para a aba evento
-document.addEventListener("DOMContentLoaded", () => {
-  const hash = location.hash;
-  if (hash.startsWith("#evento=")) {
-    const id = hash.split("=")[1];
-    mostrarEvento(id);
+  function mostrarEvento(id) {
+    const e = eventos[id];
+    if (!e) return;
     trocarAba('evento');
+    const descricaoHtml = (e.descricao || "").replace(/\n/g, '<br>');
+    document.getElementById('event-page').innerHTML = `
+      <h2>${e.titulo}</h2>
+      <img src="${e.imagem}" alt="${e.titulo}" />
+      <p><strong>Data:</strong> ${formatarData(e.data)}</p>
+      <p>${descricaoHtml}</p>
+    `;
   }
-});
 
+  function novoEvento() {
+    document.getElementById('id').value = '';
+    document.getElementById('titulo').value = '';
+    document.getElementById('data').value = '';
+    document.getElementById('imagem').value = '';
+    document.getElementById('descricao').value = '';
+    document.getElementById('eventoSelecionado').value = '';
+  }
+
+  function atualizarDropdown() {
+    const select = document.getElementById('eventoSelecionado');
+    select.innerHTML = '<option value="">-- Escolha um evento --</option>';
+    for (const id in eventos) {
+      const option = document.createElement('option');
+      option.value = id;
+      option.textContent = `${id} - ${eventos[id].titulo}`;
+      select.appendChild(option);
+    }
+  }
+
+  function carregarEventoNoFormulario() {
+    const id = document.getElementById('eventoSelecionado').value;
+    if (!eventos[id]) return;
+    const e = eventos[id];
+    document.getElementById('id').value = id;
+    document.getElementById('titulo').value = e.titulo;
+    document.getElementById('data').value = e.data;
+    document.getElementById('imagem').value = e.imagem;
+    document.getElementById('descricao').value = e.descricao;
+  }
+
+  // --- CALENDÁRIO ---
+  let mesSelecionado = new Date().getMonth();
+  let anoSelecionado = new Date().getFullYear();
+
+  function mudarMes(d) {
+    mesSelecionado += d;
+    if (mesSelecionado > 11) { 
+      mesSelecionado = 0; 
+      anoSelecionado++; 
+    }
+    if (mesSelecionado < 0) { 
+      mesSelecionado = 11; 
+      anoSelecionado--; 
+    }
+    gerarCalendario();
+  }
+
+  function gerarCalendario() {
+    const containerDias = document.getElementById('diasCalendario');
+    const containerMes = document.getElementById('mesAtual');
+    const containerCards = document.getElementById('eventosDoMes');
+    containerDias.innerHTML = '';
+    containerCards.innerHTML = '<h3>Eventos deste mês</h3>';
+    const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    diasSemana.forEach(dia => {
+      const div = document.createElement('div');
+      div.className = 'weekday';
+      div.textContent = dia;
+      containerDias.appendChild(div);
+    });
+    const nomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    containerMes.textContent = `${nomes[mesSelecionado]} ${anoSelecionado}`;
+    const primeiroDia = new Date(anoSelecionado, mesSelecionado, 1).getDay();
+    const diasNoMes = new Date(anoSelecionado, mesSelecionado + 1, 0).getDate();
+    for (let i = 0; i < primeiroDia; i++) {
+      containerDias.appendChild(document.createElement('div'));
+    }
+    for (let dia = 1; dia <= diasNoMes; dia++) {
+      const dataStr = `${anoSelecionado}-${String(mesSelecionado + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+      const eventoId = Object.keys(eventos).find(id => eventos[id].data === dataStr);
+      const div = document.createElement('div');
+      div.className = eventoId ? 'day event-day' : 'day';
+      div.textContent = dia;
+      if (eventoId) {
+        div.onclick = () => {
+          const eventosDoDia = Object.entries(eventos).filter(([id, ev]) => ev.data === dataStr);
+          const container = document.getElementById('eventosDoMes');
+          container.innerHTML = `<h3>Eventos em ${dia}/${mesSelecionado + 1}/${anoSelecionado}</h3>`;
+          eventosDoDia.forEach(([id, e]) => {
+            const eventDiv = document.createElement('div');
+            eventDiv.className = 'event-card highlight';
+            eventDiv.innerHTML = `
+              <img src="${e.imagem}" alt="${e.titulo}" />
+              <h3>${e.titulo}</h3>
+              <div class="event-date">${formatarData(e.data)}</div>
+              <button onclick="mostrarEvento('${id}')">Ver mais</button>`;
+            container.appendChild(eventDiv);
+          });
+        };
+      }
+      containerDias.appendChild(div);
+    }
+    const eventosDoMes = Object.entries(eventos).filter(([id, ev]) => {
+      const dataEvento = new Date(ev.data);
+      return dataEvento.getMonth() === mesSelecionado && dataEvento.getFullYear() === anoSelecionado;
+    });
+    if (eventosDoMes.length === 0) {
+      containerCards.innerHTML += '<p>Nenhum evento neste mês.</p>';
+    } else {
+      eventosDoMes.forEach(([id, e]) => {
+        const eventDiv = document.createElement('div');
+        eventDiv.className = 'event-card';
+        eventDiv.innerHTML = `
+          <img src="${e.imagem}" alt="${e.titulo}" />
+          <h3>${e.titulo}</h3>
+          <div class="event-date">${formatarData(e.data)}</div>
+          <button onclick="mostrarEvento('${id}')">Ver mais</button>`;
+        containerCards.appendChild(eventDiv);
+      });
+    }
+  }
+
+  // --- GALERIA ---
+  function atualizarGaleria() {
+    const seletor = document.getElementById('seletorGaleria');
+    if (!seletor) return;
+    seletor.innerHTML = '<option value="">-- Selecione um evento --</option>';
+    for (const id in eventos) {
+      const option = document.createElement('option');
+      option.value = id;
+      option.textContent = eventos[id].titulo;
+      seletor.appendChild(option);
+    }
+    mostrarGaleria();
+  }
+
+  function mostrarGaleria() {
+    const seletor = document.getElementById('seletorGaleria');
+    const galeria = document.getElementById('galeriaFotos');
+    galeria.innerHTML = '';
+    const id = seletor.value;
+    if (!id || !eventos[id]) return;
+    // Apenas uma imagem por evento no exemplo; adapte se quiser várias.
+    galeria.innerHTML = `<img src="${eventos[id].imagem}" alt="Imagem do evento" style="width:200px; border-radius:8px;">`;
+  }
+
+  // --- INICIALIZAÇÃO ---
+  document.addEventListener("DOMContentLoaded", () => {
+    listenToEventos();
+    // hash #evento=ID
+    const hash = location.hash;
+    if (hash.startsWith("#evento=")) {
+      const id = hash.split("=")[1];
+      mostrarEvento(id);
+      trocarAba('evento');
+    }
+  });
 </script>
 </body>
 </html>
