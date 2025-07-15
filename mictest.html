@@ -2,123 +2,151 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Hold to Speak</title>
+  <title>Drill - Hold to Speak</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 2rem;
-    }
-
+    body { font-family: sans-serif; text-align: center; background: #f3f7fa; padding: 2rem; }
+    #prompt { font-size: 1.5rem; margin: 2rem 0; min-height: 2.5em; }
     #micBtn {
-      background-color: #ccc;
-      color: black;
-      border: none;
-      padding: 2rem 4rem;
-      font-size: 1.5rem;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: background-color 0.2s, color 0.2s;
+      background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+      color: #333; border: none; padding: 2rem 4rem;
+      font-size: 1.4rem; border-radius: 50px; cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      margin-bottom: 2rem;
     }
-
     #micBtn.listening {
-      background-color: green;
-      color: white;
+      background: linear-gradient(120deg, #43e97b 0%, #38f9d7 100%);
+      color: #1a1a1a;
+      animation: pulse 1s infinite;
     }
-
-    #heardText {
-      margin-top: 2rem;
-      font-size: 1.4rem;
-      min-height: 2rem;
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 #38f9d788; }
+      70% { box-shadow: 0 0 0 24px #38f9d700; }
+      100% { box-shadow: 0 0 0 0 #38f9d700; }
     }
-
-    #hint {
-      margin-top: 2rem;
-      font-style: italic;
-      color: gray;
-    }
+    #heardText { font-size: 1.2rem; margin-top: 1.2rem; min-height: 2rem; }
+    #feedback { font-size: 2rem; margin: 1rem 0 0.5rem 0; min-height: 2.2rem;}
+    #progress { margin-top: 1.5rem; color: #888; }
   </style>
 </head>
 <body>
-
-  <button id="micBtn">🎤 Hold to Speak</button>
-  <div id="heardText">Waiting for speech...</div>
-  <div id="hint">💡 Try saying: "jump"</div>
-
+  <div id="prompt">Loading...</div>
+  <button id="micBtn" aria-label="Hold to Speak" tabindex="0">🎤 Hold to Speak</button>
+  <div id="heardText">Say the answer!</div>
+  <div id="feedback"></div>
+  <div id="progress"></div>
   <script>
+    // Frases Unit 1 - (pode expandir depois)
+    const QA = [
+      { prompt: "What's your name?",         answer: "My name's Carlos." },
+      { prompt: "What's his name?",          answer: "His name's Joshua." },
+      { prompt: "What's her name?",          answer: "Her name's Isabella." },
+      { prompt: "What is your name?",        answer: "My name is Carlos." },
+      { prompt: "What is his name?",         answer: "His name is Joshua." },
+      { prompt: "What is her name?",         answer: "Her name is Isabella." },
+    ];
+
+    // Normaliza texto: lowercase, remove pontuação e espaços extras
+    function normalize(str) {
+      return str.toLowerCase().replace(/[.,!?']/g,'').replace(/\s+/g, ' ').trim();
+    }
+
+    const promptEl = document.getElementById("prompt");
     const micBtn = document.getElementById("micBtn");
     const heardText = document.getElementById("heardText");
+    const feedback = document.getElementById("feedback");
+    const progress = document.getElementById("progress");
 
+    let idx = 0;
+
+    function showQA() {
+      promptEl.textContent = QA[idx].prompt;
+      feedback.textContent = "";
+      heardText.textContent = "Say the answer!";
+      progress.textContent = `(${idx+1}/${QA.length})`;
+    }
+
+    // Setup speech recognition
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.interimResults = false;
-    recognition.continuous = false;
+    if (!SpeechRecognition) {
+      heardText.textContent = "Speech Recognition not supported!";
+      micBtn.disabled = true;
+    }
 
+    let recognition;
     let isListening = false;
 
-    recognition.onstart = () => {
-      micBtn.classList.add("listening");
-      micBtn.textContent = "🎙️ Listening...";
-    };
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+      recognition.continuous = false;
 
-    recognition.onend = () => {
-      micBtn.classList.remove("listening");
-      micBtn.textContent = "🎤 Hold to Speak";
-    };
+      recognition.onstart = () => {
+        micBtn.classList.add("listening");
+        micBtn.textContent = "🎙️ Listening...";
+      };
 
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript.toLowerCase();
-      heardText.textContent = `Heard: "${transcript}"`;
-
-      if (transcript.includes("jump")) {
-        heardText.textContent += " ✅ Command: JUMP!";
-      } else {
-        heardText.textContent += " ❌ Command not recognized";
-      }
-    };
-
-    recognition.onerror = (e) => {
-      heardText.textContent = "Error: " + e.error;
-    };
-
-    // Start on press
-    micBtn.addEventListener("mousedown", () => {
-      try {
-        recognition.start();
-        isListening = true;
-      } catch (e) {
-        console.log("Already listening...");
-      }
-    });
-
-    // Stop on release
-    micBtn.addEventListener("mouseup", () => {
-      if (isListening) {
-        recognition.stop();
+      recognition.onend = () => {
+        micBtn.classList.remove("listening");
+        micBtn.textContent = "🎤 Hold to Speak";
         isListening = false;
-      }
-    });
+      };
 
-    // For touchscreens
-    micBtn.addEventListener("touchstart", (e) => {
-      e.preventDefault(); // Prevents accidental zoom
-      try {
-        recognition.start();
-        isListening = true;
-      } catch (e) {
-        console.log("Already listening...");
-      }
-    });
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        heardText.textContent = `Heard: "${transcript}"`;
+        // Verifica resposta
+        if(normalize(transcript) === normalize(QA[idx].answer)){
+          feedback.textContent = "✅";
+          setTimeout(() => {
+            idx++;
+            if(idx >= QA.length) {
+              promptEl.textContent = "Well done! Finished.";
+              feedback.textContent = "🏆";
+              heardText.textContent = "";
+              progress.textContent = "";
+              micBtn.disabled = true;
+            } else {
+              showQA();
+            }
+          }, 800);
+        } else {
+          feedback.textContent = "❌";
+          // Deixa tentar de novo
+        }
+      };
 
-    micBtn.addEventListener("touchend", (e) => {
-      e.preventDefault();
-      if (isListening) {
-        recognition.stop();
+      recognition.onerror = (e) => {
+        heardText.textContent = "Error: " + e.error;
         isListening = false;
-      }
-    });
+        micBtn.classList.remove("listening");
+        micBtn.textContent = "🎤 Hold to Speak";
+      };
+
+      // Eventos de mouse/touch
+      micBtn.addEventListener("mousedown", () => {
+        if (!isListening) {
+          try { recognition.start(); isListening = true; } catch (e) {}
+        }
+      });
+      micBtn.addEventListener("mouseup", () => {
+        if (isListening) { recognition.stop(); isListening = false; }
+      });
+      micBtn.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        if (!isListening) {
+          try { recognition.start(); isListening = true; } catch (e) {}
+        }
+      });
+      micBtn.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        if (isListening) { recognition.stop(); isListening = false; }
+      });
+    }
+
+    // Inicializa
+    showQA();
   </script>
-
 </body>
 </html>
