@@ -15,13 +15,54 @@
     nav button.active {background: var(--secondary-color); color: white;}
     nav button:hover {background: #cde4ff;}
     .container {padding: 0.5rem; max-width: 1000px; margin: auto;}
-    .event-card {display: flex; flex-direction: column; align-items: center; text-align: center; background: white; padding: 0.8rem; margin: 0.5rem 0; border-radius: 10px; box-shadow: var(--card-shadow);}
+    .event-card {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      text-align: left;
+      gap: 18px;
+      background: white;
+      padding: 0.8rem;
+      margin: 0.5rem 0;
+      border-radius: 10px;
+      box-shadow: var(--card-shadow);
+      transition: all 0.3s ease;
+    }
     .event-card.highlight {border: 3px solid var(--secondary-color);}
     .event-card:hover {transform: scale(1.01); box-shadow: var(--card-hover-shadow);}
-    .event-card img {width: 80px; height: 80px; object-fit: cover; border-radius: 5px; margin-bottom: 0.5rem;}
-    .event-card h3 {margin: 0 0 0.3rem; font-size: 1rem;}
-    .event-card .event-date {color: #666; font-size: 0.9rem; margin-bottom: 0.5rem;}
-    .event-card button {background: var(--secondary-color); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 5px; cursor: pointer; margin-top: 0.5rem; font-size: 0.9rem;}
+    .event-card img {
+      width: 74px;
+      height: 74px;
+      object-fit: cover;
+      border-radius: 5px;
+      margin-bottom: 0;
+      margin-right: 8px;
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+    .event-card-content {
+      flex: 1;
+      min-width: 0;
+    }
+    .event-card h3 {
+      margin: 0 0 0.3rem;
+      font-size: 1rem;
+    }
+    .event-card .event-date {
+      color: #666;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+    .event-card button {
+      background: var(--secondary-color);
+      color: white;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+    }
     .event-card button:hover {background: #357abd;}
     #event-page img {width: 100%; border-radius: 10px; margin-bottom: 1rem;}
     #event-page h2 {font-size: 1.3rem;}
@@ -59,6 +100,11 @@
     @keyframes pop {0%{transform:scale(0.8);}100%{transform:scale(1);}}
     .modal-senha .msg-erro { color: #d13c3c; font-size: .97rem; }
     @media (max-width: 500px) {.modal-senha{min-width:160px;}}
+    @media (max-width: 600px) {
+      .event-card {flex-direction: column; text-align: center; align-items: center;}
+      .event-card img {margin-right: 0;}
+      .event-card-content {text-align: center;}
+    }
   </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -143,7 +189,7 @@
   const db = firebase.firestore();
 
   // SENHA
-  const SENHA_EDIT = "dothespring"; // Troque para sua senha
+  const SENHA_EDIT = "spring2024"; // Troque para sua senha
   let edicaoLiberada = false;
 
   function tentarAbaEditar(evt) {
@@ -242,6 +288,8 @@
     if (id === "editar") atualizarDropdown();
     if (id === "calendario") gerarCalendario();
   }
+
+  // --- THUMBNAIL NO CARD ---
   function renderizarEventos(containerId = 'lista-eventos', highlightId = null) {
     const container = document.getElementById(containerId);
     container.innerHTML = '';
@@ -249,23 +297,38 @@
       const div = document.createElement('div');
       div.className = 'event-card';
       if (highlightId === id) div.classList.add('highlight');
-      div.innerHTML = `<img src="${e.imagem}" alt="${e.titulo}" /><h3>${e.titulo}</h3>
-        <div class="event-date">${formatarData(e.data)}</div>
-        <button onclick="mostrarEvento('${id}')">Ver mais</button>`;
+      div.innerHTML = `
+        <img src="${e.imagem}" alt="${e.titulo}" />
+        <div class="event-card-content">
+          <h3>${e.titulo}</h3>
+          <div class="event-date">${formatarData(e.data)}</div>
+          <button onclick="mostrarEvento('${id}')">Ver mais</button>
+        </div>
+      `;
       container.appendChild(div);
     }
   }
+
+  // --- BOTÃO WHATSAPP NA ABA EVENTO ---
   function mostrarEvento(id) {
     const e = eventos[id];
     if (!e) return;
     trocarAba('evento');
     const descricaoHtml = (e.descricao || "").replace(/\n/g, '<br>');
+    const linkWhats = `https://wa.me/?text=${encodeURIComponent(
+      `Confira este evento: ${e.titulo}\nData: ${formatarData(e.data)}\n${window.location.href}`
+    )}`;
     document.getElementById('event-page').innerHTML = `
       <h2>${e.titulo}</h2>
       <img src="${e.imagem}" alt="${e.titulo}" />
       <p><strong>Data:</strong> ${formatarData(e.data)}</p>
-      <p>${descricaoHtml}</p>`;
+      <p>${descricaoHtml}</p>
+      <a href="${linkWhats}" target="_blank" style="display:inline-block;margin-top:15px;background:#25d366;color:white;padding:8px 18px;border-radius:6px;text-decoration:none;font-size:1.1rem;">
+        <span style="vertical-align:middle;">📤 Compartilhar no WhatsApp</span>
+      </a>
+    `;
   }
+
   function novoEvento() {
     document.getElementById('id').value = '';
     document.getElementById('titulo').value = '';
@@ -334,10 +397,14 @@
           eventosDoDia.forEach(([id, e]) => {
             const eventDiv = document.createElement('div');
             eventDiv.className = 'event-card highlight';
-            eventDiv.innerHTML = `<img src="${e.imagem}" alt="${e.titulo}" />
-              <h3>${e.titulo}</h3>
-              <div class="event-date">${formatarData(e.data)}</div>
-              <button onclick="mostrarEvento('${id}')">Ver mais</button>`;
+            eventDiv.innerHTML = `
+              <img src="${e.imagem}" alt="${e.titulo}" />
+              <div class="event-card-content">
+                <h3>${e.titulo}</h3>
+                <div class="event-date">${formatarData(e.data)}</div>
+                <button onclick="mostrarEvento('${id}')">Ver mais</button>
+              </div>
+            `;
             container.appendChild(eventDiv);
           });
         };
@@ -354,10 +421,14 @@
       eventosDoMes.forEach(([id, e]) => {
         const eventDiv = document.createElement('div');
         eventDiv.className = 'event-card';
-        eventDiv.innerHTML = `<img src="${e.imagem}" alt="${e.titulo}" />
-          <h3>${e.titulo}</h3>
-          <div class="event-date">${formatarData(e.data)}</div>
-          <button onclick="mostrarEvento('${id}')">Ver mais</button>`;
+        eventDiv.innerHTML = `
+          <img src="${e.imagem}" alt="${e.titulo}" />
+          <div class="event-card-content">
+            <h3>${e.titulo}</h3>
+            <div class="event-date">${formatarData(e.data)}</div>
+            <button onclick="mostrarEvento('${id}')">Ver mais</button>
+          </div>
+        `;
         containerCards.appendChild(eventDiv);
       });
     }
