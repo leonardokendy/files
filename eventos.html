@@ -43,16 +43,38 @@
     .calendar-section,.events-section {min-width: auto;}
     footer {text-align: center; padding: 1rem; font-size: 0.9rem; color: #777; margin-top: 2rem;}
     .hidden {display: none;}
-    @media (max-width: 768px) {.calendar-layout {flex-direction: column;} .calendar-section,.events-section {min-width: auto;} nav {justify-content: flex-start;}}
+    /* Modal senha */
+    .modal-bg {
+      display: none; position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.25); z-index: 99; align-items: center; justify-content: center;
+    }
+    .modal-bg.active { display: flex; }
+    .modal-senha {
+      background: #fff; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.14);
+      padding: 2rem 1.3rem 1.5rem; min-width: 290px; text-align: center; animation: pop .21s;
+    }
+    .modal-senha input[type="password"] {margin-top: 1rem; margin-bottom: 1rem; padding: 0.6rem; font-size: 1.1rem; border-radius: 8px; border: 1px solid #ccc; width: 90%;}
+    .modal-senha button {background: var(--secondary-color); color: #fff; border: none; border-radius: 6px; padding: 0.5rem 1.1rem; font-size: 1.07rem; cursor: pointer;}
+    .modal-senha button:active {background: #357abd;}
+    @keyframes pop {0%{transform:scale(0.8);}100%{transform:scale(1);}}
+    .modal-senha .msg-erro { color: #d13c3c; font-size: .97rem; }
+    @media (max-width: 500px) {.modal-senha{min-width:160px;}}
   </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
-<div id="senha-area" style="text-align:center; margin:20px;">
-  <input type="password" id="senha-mestra" placeholder="Senha de edição" />
-  <button onclick="verificarSenha()">Entrar como editor</button>
+<!-- MODAL DE SENHA -->
+<div class="modal-bg" id="modalSenha">
+  <div class="modal-senha">
+    <h3>Área restrita</h3>
+    <div style="font-size: 0.99rem; color: #444;">Digite a senha para editar eventos:</div>
+    <input type="password" id="inputSenha" placeholder="Senha de edição" autocomplete="current-password" onkeydown="if(event.key==='Enter'){entrarComoEditor();}">
+    <div class="msg-erro" id="senhaErro" style="display:none;"></div>
+    <button onclick="entrarComoEditor()">Entrar</button>
+  </div>
 </div>
+
 <header>
   <img alt="Logo" class="logo" src="https://springschool.me/wp-content/uploads/2020/12/SPRING-SCHOOL-LOGO-01.png"/>
   <h1>Portal de Eventos</h1>
@@ -61,7 +83,6 @@
   <button class="active" onclick="trocarAba('home', event)">🏠 Início</button>
   <button id="btn-editar" onclick="tentarAbaEditar(event)">✏️ Editar</button>
   <button onclick="trocarAba('calendario', event)">📅 Calendário</button>
-  <button onclick="trocarAba('galeria', event)">🖼️ Galeria</button>
 </nav>
 <div class="container" id="aba-home">
   <h2>Next Events</h2>
@@ -106,14 +127,6 @@
     </div>
   </div>
 </div>
-<div class="container hidden" id="aba-galeria">
-  <h2>Galeria de Fotos dos Eventos</h2>
-  <label for="seletorGaleria">Escolha um evento</label>
-  <select id="seletorGaleria" onchange="mostrarGaleria()">
-    <option value="">-- Selecione um evento --</option>
-  </select>
-  <div id="galeriaFotos" style="margin-top:1rem; display:flex; flex-wrap:wrap; gap:10px;"></div>
-</div>
 <footer>© 2025 Spring School</footer>
 <script>
   // Firebase Config
@@ -129,10 +142,54 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // --- BLOQUEIO POR SENHA ---
+  // SENHA
   const SENHA_EDIT = "spring2024"; // Troque para sua senha
-
   let edicaoLiberada = false;
+
+  function tentarAbaEditar(evt) {
+    if (!edicaoLiberada) {
+      abrirModalSenha();
+      return;
+    }
+    trocarAba('editar', evt);
+  }
+
+  function abrirModalSenha() {
+    document.getElementById("modalSenha").classList.add("active");
+    document.getElementById("senhaErro").style.display = "none";
+    document.getElementById("inputSenha").value = "";
+    setTimeout(()=>{document.getElementById("inputSenha").focus()},150);
+  }
+  function fecharModalSenha() {
+    document.getElementById("modalSenha").classList.remove("active");
+  }
+  function entrarComoEditor() {
+    const senha = document.getElementById("inputSenha").value;
+    if (senha === SENHA_EDIT) {
+      edicaoLiberada = true;
+      fecharModalSenha();
+      trocarAba('editar', null);
+    } else {
+      document.getElementById("senhaErro").innerText = "Senha incorreta!";
+      document.getElementById("senhaErro").style.display = "";
+      document.getElementById("inputSenha").select();
+    }
+  }
+  // Fecha modal clicando fora ou ESC
+  document.addEventListener('mousedown', function(e){
+    if (document.getElementById("modalSenha").classList.contains("active")) {
+      const box = document.querySelector(".modal-senha");
+      if (!box.contains(e.target)) fecharModalSenha();
+    }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key==="Escape" && document.getElementById("modalSenha").classList.contains("active")){
+      fecharModalSenha();
+    }
+  });
+
+  // --- FIRESTORE E FUNÇÕES DE INTERFACE ---
+  let eventos = {};
   document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('aba-editar').classList.add('hidden');
     listenToEventos();
@@ -145,30 +202,6 @@
     }
   });
 
-  function verificarSenha() {
-    const senha = document.getElementById('senha-mestra').value;
-    if (senha === SENHA_EDIT) {
-      edicaoLiberada = true;
-      document.getElementById('aba-editar').classList.add('hidden'); // só mostra via click no menu depois
-      document.getElementById('senha-area').style.display = "none";
-      alert("Edição liberada! Agora clique novamente em ✏️ Editar no menu.");
-    } else {
-      alert("Senha incorreta!");
-    }
-  }
-
-  function tentarAbaEditar(evt) {
-    if (!edicaoLiberada) {
-      alert("Digite a senha de edição primeiro!");
-      document.getElementById('senha-area').scrollIntoView({behavior:'smooth'});
-      return;
-    }
-    trocarAba('editar', evt);
-    document.getElementById('aba-editar').classList.remove('hidden');
-  }
-
-  // --- FIRESTORE E FUNÇÕES DE INTERFACE IGUAIS ---
-  let eventos = {};
   function listenToEventos() {
     db.collection("eventos").onSnapshot((snapshot) => {
       eventos = {};
@@ -176,7 +209,6 @@
       renderizarEventos();
       gerarCalendario();
       atualizarDropdown();
-      atualizarGaleria();
     });
   }
   function salvarEvento(ev) {
@@ -209,7 +241,6 @@
     if (id === "home") renderizarEventos();
     if (id === "editar") atualizarDropdown();
     if (id === "calendario") gerarCalendario();
-    if (id === "galeria") atualizarGaleria();
   }
   function renderizarEventos(containerId = 'lista-eventos', highlightId = null) {
     const container = document.getElementById(containerId);
@@ -330,26 +361,6 @@
         containerCards.appendChild(eventDiv);
       });
     }
-  }
-  function atualizarGaleria() {
-    const seletor = document.getElementById('seletorGaleria');
-    if (!seletor) return;
-    seletor.innerHTML = '<option value="">-- Selecione um evento --</option>';
-    for (const id in eventos) {
-      const option = document.createElement('option');
-      option.value = id;
-      option.textContent = eventos[id].titulo;
-      seletor.appendChild(option);
-    }
-    mostrarGaleria();
-  }
-  function mostrarGaleria() {
-    const seletor = document.getElementById('seletorGaleria');
-    const galeria = document.getElementById('galeriaFotos');
-    galeria.innerHTML = '';
-    const id = seletor.value;
-    if (!id || !eventos[id]) return;
-    galeria.innerHTML = `<img src="${eventos[id].imagem}" alt="Imagem do evento" style="width:200px; border-radius:8px;">`;
   }
 </script>
 </body>
