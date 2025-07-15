@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>English Speaking Drill</title>
+  <title>Repeat the Phrase - Speaking Practice</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
     body { font-family: sans-serif; text-align: center; background: #f3f7fa; padding: 2rem; }
@@ -32,11 +32,18 @@
 <body>
   <div id="prompt">Loading...</div>
   <button id="micBtn" aria-label="Hold to Speak" tabindex="0">🎤 Hold to Speak</button>
-  <div id="heardText">Say the answer!</div>
+  <div id="heardText">Repeat the phrase above!</div>
   <div id="feedback"></div>
   <div id="progress"></div>
+  <!-- Sons de feedback -->
+  <audio id="audio-success" preload="auto">
+    <source src="https://cdn.pixabay.com/audio/2022/10/16/audio_12a43981b5.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="audio-error" preload="auto">
+    <source src="https://cdn.pixabay.com/audio/2022/10/16/audio_12cdbb89b1.mp3" type="audio/mpeg">
+  </audio>
   <script>
-    // Remove toda pontuação e espaços extras, case-insensitive
+    // Normaliza (remove pontuação, espaços extras, caixa-baixa)
     function normalize(str) {
       return str
         .toLowerCase()
@@ -45,113 +52,64 @@
         .trim();
     }
 
-    // GRANDE BANCO DE FRASES - Edite aqui
-    const QA = [
-      // Unit 1 - Names
-      { prompt: "What's your name?", answer: "My name is Nicholas." },
-      { prompt: "What's your name?", answer: "My name is Madison." },
-      { prompt: "What's your name?", answer: "My name is Jennifer." },
-      { prompt: "What's your name?", answer: "My name is Emily." },
-      { prompt: "What's your name?", answer: "My name is Joshua." },
-      { prompt: "What's your name?", answer: "My name is Isabella." },
-      { prompt: "What's your name?", answer: "My name is Michael." },
-      { prompt: "What's your name?", answer: "My name is William." },
-      { prompt: "What's your name?", answer: "My name is Elizabeth." },
-      { prompt: "What's his name?", answer: "His name is Joshua." },
-      { prompt: "What's her name?", answer: "Her name is Isabella." },
-      { prompt: "What's your nickname?", answer: "My nickname is Mike." },
-      { prompt: "What's your nickname?", answer: "My nickname is Em." },
-      // Unit 1 - Greetings
-      { prompt: "How are you?", answer: "I'm fine, thank you." },
-      { prompt: "How are you?", answer: "I'm good, thank you." },
-      { prompt: "How are you?", answer: "I'm great, thanks." },
-      { prompt: "Hello.", answer: "Hi." },
-      { prompt: "Hi.", answer: "Hello." },
-      { prompt: "Nice to meet you.", answer: "Nice to meet you, too." },
-      // Unit 2 - Objects/Location
-      { prompt: "What's this?", answer: "It's a flash drive." },
-      { prompt: "What's this?", answer: "It's a laptop." },
-      { prompt: "What are these?", answer: "They're flash drives." },
-      { prompt: "Is this your wallet?", answer: "Yes, it is." },
-      { prompt: "Is this your wallet?", answer: "No, it's not." },
-      { prompt: "Are these your keys?", answer: "Yes, they are." },
-      { prompt: "Are these your keys?", answer: "No, they're not." },
-      { prompt: "Where's your wallet?", answer: "It's in my pocket." },
-      { prompt: "Where are my keys?", answer: "They're on the table." },
-      { prompt: "Where's the book?", answer: "It's on the desk." },
-      { prompt: "Where's the pen?", answer: "It's under the chair." },
-      { prompt: "Where is the eraser?", answer: "It's next to the notebook." },
-      // Unit 3 - Places and people
-      { prompt: "Are you from Brazil?", answer: "Yes, I am." },
-      { prompt: "Are you from Japan?", answer: "No, I'm not." },
-      { prompt: "Are you from São Paulo?", answer: "Yes, I am." },
-      { prompt: "Are you from São Paulo?", answer: "No, I'm not." },
-      { prompt: "Is she from the U.S.?", answer: "Yes, she is." },
-      { prompt: "Is she from the U.S.?", answer: "No, she's not." },
-      { prompt: "Where are you from?", answer: "I'm from Brazil." },
-      { prompt: "Where are you from?", answer: "I'm from Japan." },
-      { prompt: "Where are you from?", answer: "I'm from the United States." },
-      { prompt: "Where are you from?", answer: "I'm from Canada." },
-      { prompt: "Where are you from?", answer: "I'm from Egypt." },
-      { prompt: "What's your nationality?", answer: "I'm Brazilian." },
-      { prompt: "What's your nationality?", answer: "I'm Japanese." },
-      { prompt: "What's your nationality?", answer: "I'm American." },
-      { prompt: "What's your nationality?", answer: "I'm Chinese." },
-      { prompt: "Who's that?", answer: "She's my sister." },
-      { prompt: "Who's that?", answer: "He's my brother." },
-      { prompt: "How old is she?", answer: "She's twenty-eight." },
-      { prompt: "How old are you?", answer: "I'm twenty-two." },
-      { prompt: "What's she like?", answer: "She's very nice." },
-      { prompt: "What's he like?", answer: "He's very funny." },
-      // Unit 4 - Clothes, weather
-      { prompt: "Are you wearing gloves?", answer: "Yes, I am." },
-      { prompt: "Are you wearing gloves?", answer: "No, I'm not." },
-      { prompt: "Is she wearing boots?", answer: "Yes, she is." },
-      { prompt: "Is she wearing boots?", answer: "No, she's not." },
-      { prompt: "What are you wearing?", answer: "I'm wearing a new gray suit." },
-      { prompt: "What are you wearing?", answer: "I'm wearing a T-shirt and jeans." },
-      { prompt: "What is the weather like?", answer: "It's sunny, but it's cold." },
-      { prompt: "What is the weather like?", answer: "It's raining." },
-      { prompt: "What is the weather like?", answer: "It's windy and cold." },
-      { prompt: "What season is it?", answer: "It's winter." },
-      { prompt: "What season is it?", answer: "It's summer." },
-      // Unit 5 - Time and routines
-      { prompt: "What time is it?", answer: "It's two o'clock." },
-      { prompt: "What time is it?", answer: "It's five after two." },
-      { prompt: "What time is it?", answer: "It's a quarter after two." },
-      { prompt: "What time is it?", answer: "It's half past two." },
-      { prompt: "What time is it?", answer: "It's twenty to three." },
-      { prompt: "What time is it?", answer: "It's a quarter to three." },
-      { prompt: "Is it A.M. or P.M.?", answer: "It's six in the morning." },
-      { prompt: "Is it A.M. or P.M.?", answer: "It's four in the afternoon." },
-      { prompt: "What's Daniel doing?", answer: "He's sleeping right now." },
-      { prompt: "What are Lya and Erin doing?", answer: "They're having breakfast." },
-      { prompt: "What are you doing?", answer: "I'm studying English." },
-      { prompt: "What are you doing?", answer: "I'm watching a movie." },
-      // Unit 6 - Transportation and routines
-      { prompt: "How do you go to school?", answer: "I walk to school." },
-      { prompt: "How do you go to school?", answer: "I ride my bike to school." },
-      { prompt: "How do you go to work?", answer: "I take the train to work." },
-      { prompt: "How do you go to work?", answer: "I take the bus to work." },
-      { prompt: "How does she go to work?", answer: "She takes the subway to work." },
-      { prompt: "How does he go to work?", answer: "He drives to work." },
-      { prompt: "Do you get up early on Sundays?", answer: "No, I get up late." },
-      { prompt: "Do you get up early on Sundays?", answer: "Yes, I get up early." },
-      { prompt: "Does he eat breakfast at seven o'clock?", answer: "No, he eats breakfast at seven-thirty." },
-      { prompt: "Does he eat breakfast at seven o'clock?", answer: "Yes, he does." },
-      { prompt: "What time do you get up?", answer: "At noon." },
-      { prompt: "What time do you get up?", answer: "At seven o'clock." },
-      { prompt: "When do they take the subway?", answer: "On Mondays and Wednesdays." },
-      { prompt: "When do they take the subway?", answer: "On weekends." },
-      // General
-      { prompt: "What do you like to do?", answer: "I like to play basketball." },
-      { prompt: "What do you like to do?", answer: "I like to listen to music." },
-      { prompt: "What do you like to do?", answer: "I like to read." },
-      { prompt: "What language do you speak?", answer: "I speak English." },
-      { prompt: "What language do you speak?", answer: "I speak Portuguese." }
+    // Frases a serem repetidas
+    const PHRASES = [
+      // Unit 1
+      "What's your name?",
+      "My name is Nicholas.",
+      "Nice to meet you.",
+      "How are you?",
+      "Hello.",
+      "I'm fine, thank you.",
+      // Unit 2
+      "What's this?",
+      "It's a flash drive.",
+      "Is this your wallet?",
+      "Yes, it is.",
+      "No, it's not.",
+      "Where's your wallet?",
+      "It's in my pocket.",
+      // Unit 3
+      "Where are you from?",
+      "I'm from Brazil.",
+      "Are you from Japan?",
+      "No, I'm not.",
+      "Who's that?",
+      "She's my sister.",
+      "He's my brother.",
+      "How old is she?",
+      "She's twenty-eight.",
+      // Unit 4
+      "Are you wearing gloves?",
+      "Yes, I am.",
+      "No, I'm not.",
+      "What are you wearing?",
+      "I'm wearing a new gray suit.",
+      "It's sunny, but it's cold.",
+      // Unit 5
+      "What time is it?",
+      "It's two o'clock.",
+      "It's a quarter after two.",
+      "It's six in the morning.",
+      "What's Daniel doing?",
+      "He's sleeping right now.",
+      // Unit 6
+      "How do you go to school?",
+      "I walk to school.",
+      "Do you get up early on Sundays?",
+      "No, I get up late.",
+      "What time do you get up?",
+      "At seven o'clock.",
+      "What do you like to do?",
+      "I like to play basketball.",
+      "I speak English.",
+      "On Mondays and Wednesdays."
     ];
 
-    // --- NAVEGAÇÃO ---
+    // Carregar sons
+    const audioSuccess = document.getElementById('audio-success');
+    const audioError = document.getElementById('audio-error');
+
     const promptEl = document.getElementById("prompt");
     const micBtn = document.getElementById("micBtn");
     const heardText = document.getElementById("heardText");
@@ -160,11 +118,11 @@
 
     let idx = 0;
 
-    function showQA() {
-      promptEl.textContent = QA[idx].prompt;
+    function showPhrase() {
+      promptEl.textContent = PHRASES[idx];
       feedback.textContent = "";
-      heardText.textContent = "Say the answer!";
-      progress.textContent = `(${idx+1}/${QA.length})`;
+      heardText.textContent = "Repeat the phrase above!";
+      progress.textContent = `(${idx+1}/${PHRASES.length})`;
     }
 
     // Reconhecimento de voz
@@ -198,22 +156,26 @@
         const transcript = event.results[0][0].transcript;
         heardText.textContent = `Heard: "${transcript}"`;
         // Compara ignorando pontuação
-        if(normalize(transcript) === normalize(QA[idx].answer)){
+        if(normalize(transcript) === normalize(PHRASES[idx])){
           feedback.textContent = "✅";
+          audioSuccess.currentTime = 0;
+          audioSuccess.play();
           setTimeout(() => {
             idx++;
-            if(idx >= QA.length) {
+            if(idx >= PHRASES.length) {
               promptEl.textContent = "Well done! Finished.";
               feedback.textContent = "🏆";
               heardText.textContent = "";
               progress.textContent = "";
               micBtn.disabled = true;
             } else {
-              showQA();
+              showPhrase();
             }
           }, 800);
         } else {
           feedback.textContent = "❌";
+          audioError.currentTime = 0;
+          audioError.play();
         }
       };
 
@@ -245,7 +207,7 @@
       });
     }
 
-    showQA();
+    showPhrase();
   </script>
 </body>
 </html>
