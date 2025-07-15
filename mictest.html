@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Repeat the Phrase - Speaking Practice</title>
+  <title>Repeat the Phrase - Smart Matching</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
     body { font-family: sans-serif; text-align: center; background: #f3f7fa; padding: 2rem; }
@@ -35,7 +35,7 @@
   <div id="heardText">Repeat the phrase above!</div>
   <div id="feedback"></div>
   <div id="progress"></div>
-  <!-- Sons de feedback -->
+  <!-- Feedback sounds -->
   <audio id="audio-success" preload="auto">
     <source src="https://cdn.pixabay.com/audio/2022/10/16/audio_12a43981b5.mp3" type="audio/mpeg">
   </audio>
@@ -43,24 +43,74 @@
     <source src="https://cdn.pixabay.com/audio/2022/10/16/audio_12cdbb89b1.mp3" type="audio/mpeg">
   </audio>
   <script>
-    // Normaliza (remove pontuação, espaços extras, caixa-baixa)
+    // -- Number-to-words map (0-100) --
+    const numberWords = {
+      0:"zero", 1:"one", 2:"two", 3:"three", 4:"four", 5:"five", 6:"six", 7:"seven", 8:"eight", 9:"nine",
+      10:"ten",11:"eleven",12:"twelve",13:"thirteen",14:"fourteen",15:"fifteen",16:"sixteen",17:"seventeen",
+      18:"eighteen",19:"nineteen",20:"twenty",30:"thirty",40:"forty",50:"fifty",60:"sixty",70:"seventy",
+      80:"eighty",90:"ninety",100:"one hundred"
+    };
+    function numberToWords(num) {
+      num = parseInt(num,10);
+      if (numberWords[num]) return numberWords[num];
+      if (num < 100) {
+        let tens = Math.floor(num/10)*10, ones = num%10;
+        return numberWords[tens] + " " + numberWords[ones];
+      }
+      return num.toString();
+    }
+    function wordsToNumber(str) {
+      // Only for 0-100 for this app; can be expanded if needed
+      str = str.replace(/-/g," ");
+      let nums = {};
+      for(let i=0;i<=100;i++) {
+        let w = numberToWords(i);
+        nums[w] = i+"";
+      }
+      return nums[str.trim()] || null;
+    }
+
+    // -- Normalize input for robust matching --
     function normalize(str) {
-      return str
-        .toLowerCase()
+      str = str.toLowerCase()
         .replace(/[\.,\/#!$%\^&\*;:{}=\-_`~()\?\!'"\[\]\\@]/g, '')
         .replace(/\s+/g, ' ')
         .trim();
+
+      // American/British color
+      str = str.replace(/\bgrey\b/g, 'gray');
+      // Okay/ok
+      str = str.replace(/\bokay\b/g, 'ok');
+      // Numbers: replace any number word (up to 100) with its digit, and any digit with its number word
+      // e.g., "twenty eight" <-> 28
+      // First: numbers as digits → words
+      str = str.replace(/\b([0-9]{1,3})\b/g, function(match) {
+        let w = numberToWords(match);
+        return w ? w : match;
+      });
+      // Now, number words → digits (rare in this code, since we keep words as model, but for robustness)
+      for (let i=0;i<=100;i++) {
+        let w = numberToWords(i);
+        // Avoid matching inside other words
+        let re = new RegExp("\\b"+w+"\\b", "g");
+        str = str.replace(re, w); // Actually, keep as words for comparison
+      }
+      return str;
     }
 
-    // Frases a serem repetidas
+    // -- Phrases for shadowing (add/edit freely) --
     const PHRASES = [
-      // Unit 1
       "What's your name?",
       "My name is Nicholas.",
       "Nice to meet you.",
       "How are you?",
       "Hello.",
       "I'm fine, thank you.",
+      "She's twenty-eight.",
+      "He's twenty eight.",
+      "I have twenty-eight books.",
+      "My favorite color is gray.",
+      "My favorite color is grey.",
       // Unit 2
       "What's this?",
       "It's a flash drive.",
@@ -77,8 +127,6 @@
       "Who's that?",
       "She's my sister.",
       "He's my brother.",
-      "How old is she?",
-      "She's twenty-eight.",
       // Unit 4
       "Are you wearing gloves?",
       "Yes, I am.",
@@ -106,10 +154,9 @@
       "On Mondays and Wednesdays."
     ];
 
-    // Carregar sons
+    // -- Main code --
     const audioSuccess = document.getElementById('audio-success');
     const audioError = document.getElementById('audio-error');
-
     const promptEl = document.getElementById("prompt");
     const micBtn = document.getElementById("micBtn");
     const heardText = document.getElementById("heardText");
@@ -125,7 +172,7 @@
       progress.textContent = `(${idx+1}/${PHRASES.length})`;
     }
 
-    // Reconhecimento de voz
+    // Speech recognition
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       heardText.textContent = "Speech Recognition not supported!";
@@ -155,7 +202,6 @@
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         heardText.textContent = `Heard: "${transcript}"`;
-        // Compara ignorando pontuação
         if(normalize(transcript) === normalize(PHRASES[idx])){
           feedback.textContent = "✅";
           audioSuccess.currentTime = 0;
