@@ -153,50 +153,16 @@
       box-shadow: 0 2px 6px #0001;
     }
     .preview-link:active { box-shadow: none; }
-    #toast { 
-      position: fixed; 
-      bottom: 80px; 
-      left: 50%; 
-      transform: translateX(-50%); 
-      background: #4caf50; 
-      color: white; 
-      padding: 1rem 2rem; 
-      border-radius: 8px; 
-      font-weight: bold; 
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
-      opacity: 0; 
-      transition: opacity 0.5s; 
-      z-index: 2000; 
-      display: none;
-    }
+    #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 1rem 2rem; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.5s; z-index: 2000; }
     #toast.show { display: block; opacity: 1; }
-    .error-toast { background: #f44336 !important; }
-    .warning-toast { background: #ff9800 !important; }
-    .loading { 
-      display: none; 
-      text-align: center; 
-      padding: 2rem; 
-      color: #666; 
-    }
-    
-    /* Melhor responsividade */
     @media (max-width: 1100px) {
       #editArea { flex-direction: column; align-items: stretch; }
       .edit-card, .middle-card, .preview-card { max-width: 100%; min-width: unset; }
     }
-    @media (max-width: 768px) {
-      .grid { grid-template-columns: 1fr; padding: 1rem; }
-      header { flex-direction: column; gap: 1rem; text-align: center; }
-      #tagFilters { padding: 1rem; }
-      footer { gap: 1rem; }
-      footer button { font-size: 0.9rem; padding: 0.4rem 0.8rem; }
-    }
-    @media (max-width: 480px) {
-      h1 { font-size: 1.5rem; }
-      .card { padding: 1rem; }
-      #editArea { padding: 1rem 0; }
-    }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <header>
@@ -211,7 +177,6 @@
 </header>
 
 <main id="homeView" class="active">
-  <div class="loading" id="loading">Carregando jogos...</div>
   <div id="tagFilters"></div>
   <div class="grid" id="homeGrid"></div>
 </main>
@@ -226,17 +191,7 @@
 </footer>
 <div id="toast">💾 Jogos salvos com sucesso!</div>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
 <script>
-  // Verificação se Firebase carregou
-  if (typeof firebase === 'undefined') {
-    showToast('❌ Erro: Firebase não carregou. Verifique sua conexão.', 'error');
-    console.error('Firebase CDN failed to load');
-  }
-
   const firebaseConfig = {
     apiKey: "AIzaSyAsYg7ZTHXD_a6d_icFLw9e5y0jSTfXBi0",
     authDomain: "spring-stage-by-leo.firebaseapp.com",
@@ -246,161 +201,63 @@
     appId: "1:215839443924:web:16a9fae4a0a5da76f16441",
     measurementId: "G-JEE5SLV9YP"
   };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-  let auth, db;
   let allGames = [];
-  let selectedTags = []; // Agora sempre em lowercase para consistência
+  let selectedTags = [];
   let userLogged = false;
-  let currentEditListeners = []; // Para track de event listeners
 
-  // Inicialização segura do Firebase
-  function initFirebase() {
-    try {
-      if (typeof firebase !== 'undefined') {
-        firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-        db = firebase.firestore();
-        
-        auth.onAuthStateChanged(user => {
-          if (user) {
-            safeUpdateElement('.login-btn', el => {
-              el.textContent = user.displayName || 'Usuário';
-              el.disabled = true;
-            });
-            userLogged = true;
-            loadFromFirebase();
-          }
-        });
-      } else {
-        throw new Error('Firebase não disponível');
-      }
-    } catch (error) {
-      console.error('Erro ao inicializar Firebase:', error);
-      showToast('❌ Erro de conexão. Algumas funcionalidades podem não funcionar.', 'error');
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      document.querySelector('.login-btn').textContent = user.displayName;
+      document.querySelector('.login-btn').disabled = true;
+      userLogged = true;
+      loadFromFirebase();
     }
-  }
-
-  // Função auxiliar para atualizações seguras do DOM
-  function safeUpdateElement(selector, updateFn) {
-    const element = document.querySelector(selector);
-    if (element) {
-      updateFn(element);
-    } else {
-      console.warn(`Elemento não encontrado: ${selector}`);
-    }
-  }
-
-  function safeGetElement(id) {
-    const element = document.getElementById(id);
-    if (!element) {
-      console.warn(`Elemento não encontrado: ${id}`);
-    }
-    return element;
-  }
+  });
 
   function handleLogin() {
-    if (typeof firebase === 'undefined' || !auth) {
-      showToast('❌ Serviço de login não disponível.', 'error');
-      return;
-    }
-
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider)
       .then(result => {
-        safeUpdateElement('.login-btn', el => {
-          el.textContent = result.user.displayName || 'Usuário';
-          el.disabled = true;
-        });
+        document.querySelector('.login-btn').textContent = result.user.displayName;
+        document.querySelector('.login-btn').disabled = true;
         userLogged = true;
-        showToast('✅ Login realizado com sucesso!');
         loadFromFirebase();
       })
-      .catch(error => {
-        console.error('Erro no login:', error);
-        showToast('❌ Erro no login. Tente novamente.', 'error');
-      });
+      .catch(error => console.error('Erro no login:', error));
   }
 
   function switchView(view) {
-    // Validação de entrada
-    if (!view || typeof view !== 'string') {
-      console.error('View inválida:', view);
-      return;
-    }
-
     if (view === 'addNew' && !userLogged) {
-      showToast("⚠️ Faça login para acessar o cadastro.", 'warning');
+      showToast("⚠️ Faça login para acessar o cadastro.");
       return;
     }
-
-    // Verificação segura dos elementos
-    const homeView = safeGetElement('homeView');
-    const addNewView = safeGetElement('addNewView');
-    const targetView = safeGetElement(view + 'View');
-
-    if (!homeView || !addNewView || !targetView) {
-      console.error('Elementos de view não encontrados');
-      return;
-    }
-
-    // Atualização segura das classes
-    homeView.classList.remove('active');
-    addNewView.classList.remove('active');
-    targetView.classList.add('active');
-    
-    if (view === 'addNew') {
-      showEditCard();
-    }
+    document.getElementById('homeView').classList.remove('active');
+    document.getElementById('addNewView').classList.remove('active');
+    document.getElementById(view + 'View').classList.add('active');
+    if(view === 'addNew') showEditCard();
   }
 
-  function showToast(msg, type = 'success') {
-    const toast = safeGetElement('toast');
-    if (!toast) return;
-
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
     toast.textContent = msg;
-    toast.className = `show ${type ? type + '-toast' : ''}`;
-    
-    setTimeout(() => {
-      toast.classList.remove('show');
-      // Limpa classes de tipo após animação
-      setTimeout(() => {
-        toast.className = '';
-      }, 500);
-    }, 4000); // Aumentado para 4 segundos
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
   }
 
-  function showLoading(show = true) {
-    const loading = safeGetElement('loading');
-    if (loading) {
-      loading.style.display = show ? 'block' : 'none';
-    }
-  }
-
-  // Função para limpar event listeners antigos
-  function clearEditListeners() {
-    currentEditListeners.forEach(({ element, event, handler }) => {
-      if (element) {
-        element.removeEventListener(event, handler);
-      }
-    });
-    currentEditListeners = [];
-  }
-
-  // Função auxiliar para adicionar listeners rastreáveis
-  function addTrackedListener(element, event, handler) {
-    if (element) {
-      element.addEventListener(event, handler);
-      currentEditListeners.push({ element, event, handler });
-    }
-  }
-
+  // ----------- EDIT MODE: 3 COLUNAS (CORRIGIDO) -----------
   function showEditCard() {
-    const editArea = safeGetElement('editArea');
-    if (!editArea) return;
-
-    // Limpa listeners antigos antes de criar novos
-    clearEditListeners();
+    const editArea = document.getElementById('editArea');
     editArea.innerHTML = '';
+
+    // Container principal para as 3 colunas
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.gap = '2rem';
+    container.style.flexWrap = 'wrap';
 
     // Bloco de edição à esquerda
     const editCard = document.createElement('div');
@@ -411,7 +268,7 @@
       <input type="text" class="input-tags" placeholder="Tags (comma-separated)">
       <input type="text" class="input-link" placeholder="URL">
       <div class="btn-actions">
-        <button type="button" onclick="addGame(this)">Add</button>
+        <button type="button" onclick="addGame()">Add</button>
       </div>
     `;
 
@@ -419,7 +276,7 @@
     const middleCard = document.createElement('div');
     middleCard.className = 'middle-card';
     middleCard.innerHTML = `
-      <textarea class="input-moreinfo" placeholder="More info (opcional)"></textarea>
+      <textarea class="input-moreinfo" placeholder="More info (opcional)" rows="3"></textarea>
       <input type="text" class="input-btntext" placeholder="Button text (Play, Download, Watch...)">
     `;
 
@@ -430,87 +287,96 @@
       <div class="preview-title">Game Name</div>
       <div class="preview-desc">Description</div>
       <div class="preview-tags"></div>
-      <button class="preview-moreinfo" style="display:none; margin-bottom:0.7rem;"></button>
+      <button class="preview-moreinfo" style="display:none;">More Info</button>
       <a class="preview-link" href="#" target="_blank">Play</a>
     `;
 
-    // Event listeners com rastreamento
-    const inputs = {
-      nome: editCard.querySelector('.input-nome'),
-      desc: editCard.querySelector('.input-desc'),
-      tags: editCard.querySelector('.input-tags'),
-      link: editCard.querySelector('.input-link'),
-      moreinfo: middleCard.querySelector('.input-moreinfo'),
-      btntext: middleCard.querySelector('.input-btntext')
-    };
+    // EVENTOS CORRIGIDOS para sincronização do preview
+    const inputNome = editCard.querySelector('.input-nome');
+    const inputDesc = editCard.querySelector('.input-desc');
+    const inputTags = editCard.querySelector('.input-tags');
+    const inputLink = editCard.querySelector('.input-link');
+    const inputMoreinfo = middleCard.querySelector('.input-moreinfo');
+    const inputBtntext = middleCard.querySelector('.input-btntext');
 
-    const previews = {
-      title: previewCard.querySelector('.preview-title'),
-      desc: previewCard.querySelector('.preview-desc'),
-      tags: previewCard.querySelector('.preview-tags'),
-      moreinfo: previewCard.querySelector('.preview-moreinfo'),
-      link: previewCard.querySelector('.preview-link')
-    };
+    const previewTitle = previewCard.querySelector('.preview-title');
+    const previewDesc = previewCard.querySelector('.preview-desc');
+    const previewTagsContainer = previewCard.querySelector('.preview-tags');
+    const previewMoreinfoBtn = previewCard.querySelector('.preview-moreinfo');
+    const previewLink = previewCard.querySelector('.preview-link');
 
-    // Handlers dos event listeners
-    const handlers = {
-      nome: (e) => {
-        previews.title.textContent = e.target.value || 'Game Name';
-      },
-      desc: (e) => {
-        previews.desc.textContent = e.target.value || 'Description';
-      },
-      tags: (e) => {
-        const val = e.target.value;
-        const arr = val.split(',').map(t => t.trim()).filter(Boolean);
-        previews.tags.innerHTML = arr.map(tag => `<span class="preview-tag">${escapeHtml(tag)}</span>`).join('');
-      },
-      link: (e) => {
-        const val = e.target.value;
-        previews.link.href = val || '#';
-        const btnText = inputs.btntext.value;
-        previews.link.textContent = btnText || getLabelForLink(val);
-      },
-      moreinfo: (e) => {
-        const val = e.target.value.trim();
-        if (val) {
-          previews.moreinfo.textContent = val;
-          previews.moreinfo.style.display = '';
-        } else {
-          previews.moreinfo.style.display = 'none';
-        }
-      },
-      btntext: (e) => {
-        const val = e.target.value;
-        const urlVal = inputs.link.value;
-        previews.link.textContent = val || getLabelForLink(urlVal);
-      }
-    };
+    // Sincronização do preview
+    inputNome.addEventListener('input', e => {
+      previewTitle.textContent = e.target.value || 'Game Name';
+    });
 
-    // Adiciona listeners rastreados
-    Object.keys(handlers).forEach(key => {
-      if (inputs[key]) {
-        addTrackedListener(inputs[key], 'input', handlers[key]);
+    inputDesc.addEventListener('input', e => {
+      previewDesc.textContent = e.target.value || 'Description';
+    });
+
+    inputTags.addEventListener('input', e => {
+      const val = e.target.value;
+      const arr = val.split(',').map(t => t.trim()).filter(Boolean);
+      previewTagsContainer.innerHTML = arr.map(tag => `<span class="preview-tag">${tag}</span>`).join('');
+    });
+
+    inputLink.addEventListener('input', e => {
+      const val = e.target.value;
+      previewLink.href = val || '#';
+      // Só usa getLabelForLink se o campo button text estiver vazio
+      const btnText = inputBtntext.value.trim();
+      previewLink.textContent = btnText || getLabelForLink(val);
+    });
+
+    // CORRIGIDO: More info preview
+    inputMoreinfo.addEventListener('input', e => {
+      const val = e.target.value.trim();
+      console.log('More info input:', val); // Debug
+      if (val) {
+        previewMoreinfoBtn.textContent = val;
+        previewMoreinfoBtn.style.display = 'block';
+      } else {
+        previewMoreinfoBtn.style.display = 'none';
       }
     });
 
-    // Container com layout responsivo
-    const container = document.createElement('div');
-    container.style.display = 'flex';
-    container.style.gap = '2rem';
-    container.style.flexWrap = 'wrap';
+    // Button text
+    inputBtntext.addEventListener('input', e => {
+      const val = e.target.value.trim();
+      const urlVal = inputLink.value;
+      previewLink.textContent = val || getLabelForLink(urlVal);
+    });
+
+    // Adicionar click no botão more info para teste
+    previewMoreinfoBtn.addEventListener('click', () => {
+      const moreInfoText = inputMoreinfo.value.trim();
+      if (moreInfoText) {
+        alert(moreInfoText);
+      }
+    });
+
+    // Adiciona as 3 colunas ao container
     container.appendChild(editCard);
     container.appendChild(middleCard);
     container.appendChild(previewCard);
 
+    // Adiciona ao editArea
     editArea.appendChild(container);
-  }
 
-  // Função para escapar HTML e prevenir XSS
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    // Salva referências globais para a função addGame
+    window.currentEditElements = {
+      inputNome,
+      inputDesc,
+      inputTags,
+      inputLink,
+      inputMoreinfo,
+      inputBtntext,
+      previewTitle,
+      previewDesc,
+      previewTagsContainer,
+      previewMoreinfoBtn,
+      previewLink
+    };
   }
 
   function getLabelForLink(link) {
@@ -518,415 +384,181 @@
     return /\.(pdf|zip|docx?|xlsx?|pptx?|mp3|mp4)$/i.test(link) ? 'Download' : 'Play';
   }
 
-  // Validação e sanitização de dados
-  function validateGameData(data) {
-    const errors = [];
-    
-    if (!data.nome || data.nome.trim().length === 0) {
-      errors.push('Nome é obrigatório');
-    }
-    if (!data.link || data.link.trim().length === 0) {
-      errors.push('Link é obrigatório');
-    }
-    if (data.link && !isValidUrl(data.link)) {
-      errors.push('URL inválida');
-    }
-    
-    return {
-      isValid: errors.length === 0,
-      errors
-    };
-  }
-
-  function isValidUrl(string) {
-    try {
-      new URL(string);
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function sanitizeGameData(data) {
-    return {
-      nome: (data.nome || '').trim(),
-      descricao: (data.descricao || '').trim(),
-      tags: (data.tags || '').trim(),
-      link: (data.link || '').trim(),
-      moreinfo: data.moreinfo && data.moreinfo.trim() ? data.moreinfo.trim() : null,
-      buttonText: (data.buttonText || '').trim()
-    };
-  }
-
-  function addGame(btn) {
-    if (!db) {
-      showToast('❌ Banco de dados não disponível.', 'error');
+  // CORRIGIDA: função addGame
+  function addGame() {
+    if (!window.currentEditElements) {
+      showToast('⚠️ Erro: elementos não encontrados!');
       return;
     }
 
-    const editArea = safeGetElement('editArea');
-    if (!editArea) return;
+    const elements = window.currentEditElements;
+    const nome = elements.inputNome.value.trim();
+    const descricao = elements.inputDesc.value.trim();
+    const tags = elements.inputTags.value.trim();
+    const link = elements.inputLink.value.trim();
+    let moreinfo = elements.inputMoreinfo.value.trim();
+    const buttonText = elements.inputBtntext.value.trim();
 
-    const editCard = editArea.querySelector('.edit-card');
-    const middleCard = editArea.querySelector('.middle-card');
-    
-    if (!editCard || !middleCard) {
-      showToast('❌ Erro interno. Recarregue a página.', 'error');
+    console.log('Dados para salvar:', { nome, descricao, tags, link, moreinfo, buttonText }); // Debug
+
+    if (!nome || !link) {
+      showToast('⚠️ Preencha nome e link!');
       return;
     }
 
-    const rawData = {
-      nome: editCard.querySelector('.input-nome')?.value || '',
-      descricao: editCard.querySelector('.input-desc')?.value || '',
-      tags: editCard.querySelector('.input-tags')?.value || '',
-      link: editCard.querySelector('.input-link')?.value || '',
-      moreinfo: middleCard.querySelector('.input-moreinfo')?.value || '',
-      buttonText: middleCard.querySelector('.input-btntext')?.value || ''
-    };
+    // Salva null ao invés de string vazia para moreinfo
+    if (!moreinfo) moreinfo = null;
 
-    // Validação
-    const validation = validateGameData(rawData);
-    if (!validation.isValid) {
-      showToast(`⚠️ ${validation.errors.join(', ')}`, 'warning');
-      return;
-    }
-
-    // Sanitização
-    const gameData = sanitizeGameData(rawData);
-
-    // Desabilita botão durante o salvamento
-    btn.disabled = true;
-    btn.textContent = 'Salvando...';
-
-    db.collection('games').doc().set(gameData)
-      .then(() => {
-        showToast('✅ Jogo adicionado com sucesso!');
-        clearEditForm(editArea);
-        loadFromFirebase();
-      })
-      .catch(error => {
-        console.error('Erro ao salvar:', error);
-        showToast('❌ Erro ao salvar jogo. Tente novamente.', 'error');
-      })
-      .finally(() => {
-        btn.disabled = false;
-        btn.textContent = 'Add';
-      });
-  }
-
-  function clearEditForm(editArea) {
-    const inputs = editArea.querySelectorAll('input, textarea');
-    inputs.forEach(input => {
-      input.value = '';
-      // Dispara evento para atualizar preview
-      input.dispatchEvent(new Event('input'));
+    db.collection('games').doc().set({
+      nome,
+      descricao,
+      tags,
+      link,
+      moreinfo,
+      buttonText
+    })
+    .then(() => {
+      showToast('✅ Jogo adicionado com sucesso!');
+      
+      // Limpa todos os campos
+      elements.inputNome.value = '';
+      elements.inputDesc.value = '';
+      elements.inputTags.value = '';
+      elements.inputLink.value = '';
+      elements.inputMoreinfo.value = '';
+      elements.inputBtntext.value = '';
+      
+      // Limpa preview
+      elements.previewTitle.textContent = 'Game Name';
+      elements.previewDesc.textContent = 'Description';
+      elements.previewTagsContainer.innerHTML = '';
+      elements.previewMoreinfoBtn.style.display = 'none';
+      elements.previewLink.href = '#';
+      elements.previewLink.textContent = 'Play';
+      
+      loadFromFirebase(); // atualiza home
+    })
+    .catch(error => {
+      console.error('Erro ao salvar:', error);
+      showToast('❌ Erro ao salvar jogo!');
     });
   }
 
-  // Renderização segura de cards
+  // ---- RESTANTE DA HOME E TAGS ----
   function renderCard(g) {
-    // Validação de dados
-    if (!g || typeof g !== 'object') {
-      console.warn('Dados de jogo inválidos:', g);
-      return;
-    }
-
     const card = document.createElement('div');
     card.className = 'card';
+    const isArquivo = g.link && /\.(pdf|zip|docx?|xlsx?|pptx?|mp3|mp4)$/i.test(g.link);
     
-    // Sanitização e valores padrão
-    const nome = escapeHtml(g.nome || 'Sem nome');
-    const descricao = escapeHtml(g.descricao || 'Sem descrição');
-    const link = g.link || '#';
-    
-    const isArquivo = link !== '#' && /\.(pdf|zip|docx?|xlsx?|pptx?|mp3|mp4)$/i.test(link);
-    const label = (g.buttonText && g.buttonText.trim()) ? 
-                  escapeHtml(g.buttonText) : 
-                  (isArquivo ? 'Download' : 'Play');
-
-    // Elemento link
+    // Botão principal: usa texto customizado se houver
+    const label = g.buttonText && g.buttonText.trim() ? g.buttonText : (isArquivo ? 'Download' : 'Play');
     const a = document.createElement('a');
-    a.href = link;
+    a.href = g.link;
     a.textContent = label;
     a.target = '_blank';
     if (isArquivo) a.setAttribute('download', '');
 
-    // Processamento de tags
-    let tagsArray = [];
-    if (Array.isArray(g.tags)) {
-      tagsArray = g.tags;
-    } else if (typeof g.tags === "string" && g.tags.trim()) {
-      tagsArray = g.tags.split(',').map(t => t.trim()).filter(Boolean);
-    }
+    // Tags preservando maiúsculas/minúsculas
+    let tagsArray;
+    if (Array.isArray(g.tags)) tagsArray = g.tags;
+    else if (typeof g.tags === "string") tagsArray = g.tags.split(',').map(t => t.trim()).filter(Boolean);
+    else tagsArray = [];
 
     const tagContainer = document.createElement('div');
     tagContainer.className = 'tag-container';
     tagsArray.forEach(tag => {
       const tagDiv = document.createElement('div');
       tagDiv.className = 'tag';
-      tagDiv.textContent = escapeHtml(tag);
+      tagDiv.textContent = tag;
       tagContainer.appendChild(tagDiv);
     });
 
-    // Construção do card
     card.innerHTML = `
-      <h2>${nome}</h2>
-      <p>${descricao}</p>
+      <h2>${g.nome}</h2>
+      <p>${g.descricao}</p>
     `;
     card.appendChild(tagContainer);
 
-    // Botão more info (validação segura)
+    // CORRIGIDA: checagem do botão more info
     if (g.moreinfo && typeof g.moreinfo === "string" && g.moreinfo.trim().length > 0) {
       const infoBtn = document.createElement('button');
       infoBtn.className = 'preview-moreinfo';
-      infoBtn.textContent = escapeHtml(g.moreinfo);
-      infoBtn.style.display = '';
+      infoBtn.textContent = g.moreinfo;
+      infoBtn.style.display = 'block';
       infoBtn.style.marginBottom = '0.7rem';
       infoBtn.onclick = () => alert(g.moreinfo);
       card.appendChild(infoBtn);
     }
 
     card.appendChild(a);
-    
-    const homeGrid = safeGetElement('homeGrid');
-    if (homeGrid) {
-      homeGrid.appendChild(card);
-    }
+    document.getElementById('homeGrid').appendChild(card);
   }
 
   function renderTagFilters() {
-    const container = safeGetElement('tagFilters');
-    if (!container) return;
-
+    const container = document.getElementById('tagFilters');
     container.innerHTML = '';
     
-    // Extração segura de tags
     let tagsRaw = [];
     allGames.forEach(g => {
-      if (!g) return;
-      
-      let arr = [];
-      if (Array.isArray(g.tags)) {
-        arr = g.tags;
-      } else if (typeof g.tags === "string" && g.tags.trim()) {
-        arr = g.tags.split(',').map(t => t.trim()).filter(Boolean);
-      }
+      let arr;
+      if (Array.isArray(g.tags)) arr = g.tags;
+      else if (typeof g.tags === "string") arr = g.tags.split(',').map(t => t.trim()).filter(Boolean);
+      else arr = [];
       tagsRaw = tagsRaw.concat(arr);
     });
-
-    // Agrupamento mantendo primeira capitalização
+    
+    // Agrupa mantendo a primeira capitalização digitada
     let tagsDict = {};
     tagsRaw.forEach(t => {
-      if (t && typeof t === 'string') {
-        const lower = t.toLowerCase();
-        if (!tagsDict[lower]) {
-          tagsDict[lower] = t;
-        }
-      }
+      const lower = t.toLowerCase();
+      if (!tagsDict[lower]) tagsDict[lower] = t;
     });
-
     const tags = Object.values(tagsDict);
 
     tags.forEach(tag => {
       const btn = document.createElement('button');
       btn.className = 'filter-tag';
-      btn.textContent = escapeHtml(tag);
+      btn.textContent = tag;
       btn.onclick = () => toggleTag(tag, btn);
-      
-      // Verifica se tag está ativa (comparação case-insensitive)
-      if (selectedTags.includes(tag.toLowerCase())) {
-        btn.classList.add('active');
-      }
-      
       container.appendChild(btn);
     });
   }
 
   function toggleTag(tag, button) {
-    if (!tag || !button) return;
-    
     button.classList.toggle('active');
     const tagLower = tag.toLowerCase();
-    
-    if (selectedTags.includes(tagLower)) {
-      selectedTags = selectedTags.filter(t => t !== tagLower);
+    if (selectedTags.map(t => t.toLowerCase()).includes(tagLower)) {
+      selectedTags = selectedTags.filter(t => t.toLowerCase() !== tagLower);
     } else {
-      selectedTags.push(tagLower);
+      selectedTags.push(tag);
     }
-    
     filterCards();
   }
 
   function filterCards() {
-    // Validação de dados
-    if (!Array.isArray(allGames)) {
-      console.warn('allGames não é um array válido');
-      return;
-    }
-
-    const filtered = selectedTags.length === 0 ? allGames : allGames.filter(g => {
-      if (!g || typeof g !== 'object') return false;
-      
-      let tagsArray = [];
-      if (Array.isArray(g.tags)) {
-        tagsArray = g.tags;
-      } else if (typeof g.tags === "string" && g.tags.trim()) {
-        tagsArray = g.tags.split(',').map(t => t.trim()).filter(Boolean);
-      }
-      
-      // Comparação case-insensitive
-      const tagsLower = tagsArray.map(t => t.toLowerCase());
-      return selectedTags.every(tag => tagsLower.includes(tag));
-    });
-
-    const homeGrid = safeGetElement('homeGrid');
-    if (homeGrid) {
-      homeGrid.innerHTML = '';
-      filtered.forEach(renderCard);
-    }
+    const filtered = selectedTags.length === 0
+      ? allGames
+      : allGames.filter(g => {
+          let tagsArray;
+          if (Array.isArray(g.tags)) tagsArray = g.tags;
+          else if (typeof g.tags === "string") tagsArray = g.tags.split(',').map(t => t.trim()).filter(Boolean);
+          else tagsArray = [];
+          
+          const tagsLower = tagsArray.map(t => t.toLowerCase());
+          return selectedTags.every(tag => tagsLower.includes(tag.toLowerCase()));
+        });
+    document.getElementById('homeGrid').innerHTML = '';
+    filtered.forEach(renderCard);
   }
 
   function loadFromFirebase() {
-    if (!db) {
-      showToast('❌ Banco de dados não disponível.', 'error');
-      return;
-    }
-
-    showLoading(true);
-    
-    db.collection("games").get()
-      .then(snapshot => {
-        try {
-          allGames = snapshot.docs.map(doc => {
-            const data = doc.data();
-            // Validação básica dos dados
-            return {
-              nome: data.nome || '',
-              descricao: data.descricao || '',
-              tags: data.tags || '',
-              link: data.link || '',
-              moreinfo: data.moreinfo || null,
-              buttonText: data.buttonText || ''
-            };
-          });
-          
-          const homeGrid = safeGetElement('homeGrid');
-          if (homeGrid) {
-            homeGrid.innerHTML = '';
-            allGames.forEach(renderCard);
-          }
-          
-          renderTagFilters();
-          showLoading(false);
-          
-          if (allGames.length === 0) {
-            showToast('ℹ️ Nenhum jogo encontrado. Adicione o primeiro!', 'warning');
-          }
-        } catch (error) {
-          console.error('Erro ao processar dados:', error);
-          showToast('❌ Erro ao processar dados dos jogos.', 'error');
-          showLoading(false);
-        }
-      })
-      .catch(error => {
-        console.error('Erro ao carregar do Firebase:', error);
-        showToast('❌ Erro ao carregar jogos. Verifique sua conexão.', 'error');
-        showLoading(false);
-        
-        // Fallback: tenta carregar dados do localStorage
-        loadFromLocalStorage();
-      });
-  }
-
-  // Fallback para localStorage em caso de erro do Firebase
-  function loadFromLocalStorage() {
-    try {
-      const saved = localStorage.getItem('stage_games_backup');
-      if (saved) {
-        allGames = JSON.parse(saved);
-        const homeGrid = safeGetElement('homeGrid');
-        if (homeGrid) {
-          homeGrid.innerHTML = '';
-          allGames.forEach(renderCard);
-        }
-        renderTagFilters();
-        showToast('ℹ️ Carregados dados salvos localmente.', 'warning');
-      }
-    } catch (error) {
-      console.error('Erro ao carregar backup local:', error);
-    }
-  }
-
-  // Backup automático no localStorage
-  function backupToLocalStorage() {
-    try {
-      localStorage.setItem('stage_games_backup', JSON.stringify(allGames));
-    } catch (error) {
-      console.warn('Não foi possível fazer backup local:', error);
-    }
-  }
-
-  // Funcionalidades adicionais de segurança
-  function handleConnectionLoss() {
-    window.addEventListener('online', () => {
-      showToast('✅ Conexão restaurada!');
-      if (userLogged) {
-        loadFromFirebase();
-      }
-    });
-
-    window.addEventListener('offline', () => {
-      showToast('⚠️ Sem conexão. Algumas funcionalidades podem não funcionar.', 'warning');
+    db.collection("games").get().then(snapshot => {
+      allGames = snapshot.docs.map(doc => doc.data());
+      document.getElementById('homeGrid').innerHTML = '';
+      allGames.forEach(renderCard);
+      renderTagFilters();
     });
   }
-
-  // Tratamento de erros globais
-  window.addEventListener('error', (event) => {
-    console.error('Erro global capturado:', event.error);
-    if (event.error && event.error.message) {
-      if (event.error.message.includes('Firebase') || event.error.message.includes('auth')) {
-        showToast('❌ Erro de conexão com o servidor.', 'error');
-      }
-    }
-  });
-
-  // Tratamento de promises rejeitadas
-  window.addEventListener('unhandledrejection', (event) => {
-    console.error('Promise rejeitada:', event.reason);
-    event.preventDefault(); // Previne logs desnecessários no console
-  });
-
-  // Inicialização quando a página carregar
-  document.addEventListener('DOMContentLoaded', () => {
-    try {
-      initFirebase();
-      handleConnectionLoss();
-      
-      // Carrega dados iniciais mesmo sem login (dados públicos)
-      if (!userLogged) {
-        // Pode carregar dados públicos ou mostrar mensagem
-        showToast('ℹ️ Faça login para acessar todos os recursos.', 'warning');
-      }
-    } catch (error) {
-      console.error('Erro na inicialização:', error);
-      showToast('❌ Erro ao inicializar aplicação.', 'error');
-    }
-  });
-
-  // Função de cleanup quando usuário sai da página
-  window.addEventListener('beforeunload', () => {
-    clearEditListeners();
-    backupToLocalStorage();
-  });
-
-  // Exportar funções para debug (apenas em desenvolvimento)
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    window.stageDebug = {
-      allGames,
-      selectedTags,
-      userLogged,
-      loadFromFirebase,
-      clearEditListeners,
-      showToast
-    };
-  }
+</script>
+</body>
+</html>
