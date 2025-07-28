@@ -173,7 +173,7 @@
       <div class="subtitle">Spring Teacher's Activity & Guidance Engine</div>
     </div>
   </div>
-  <button class="login-btn" onclick="handleLogin()">Login</button>
+  <button class="login-btn" id="loginBtn">Login</button>
 </header>
 
 <main id="homeView" class="active">
@@ -186,8 +186,8 @@
 </main>
 
 <footer>
-  <button onclick="switchView('home')">🏠 Home</button>
-  <button onclick="switchView('addNew')">➕ Add New</button>
+  <button onclick="switchView('home')" id="homeBtn">🏠 Home</button>
+  <button onclick="switchView('addNew')" id="addNewBtn">➕ Add New</button>
 </footer>
 <div id="toast">💾 Jogos salvos com sucesso!</div>
 
@@ -209,10 +209,22 @@
   let selectedTags = [];
   let userLogged = false;
 
+  // Configurar o botão de login
+  document.addEventListener('DOMContentLoaded', function() {
+    const loginBtn = document.getElementById('loginBtn');
+    const homeBtn = document.getElementById('homeBtn');
+    const addNewBtn = document.getElementById('addNewBtn');
+    
+    loginBtn.addEventListener('click', handleLogin);
+    homeBtn.addEventListener('click', () => switchView('home'));
+    addNewBtn.addEventListener('click', () => switchView('addNew'));
+  });
+
   auth.onAuthStateChanged(user => {
     if (user) {
-      document.querySelector('.login-btn').textContent = user.displayName;
-      document.querySelector('.login-btn').disabled = true;
+      const loginBtn = document.getElementById('loginBtn');
+      loginBtn.textContent = user.displayName;
+      loginBtn.disabled = true;
       userLogged = true;
       loadFromFirebase();
     }
@@ -222,8 +234,9 @@
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider)
       .then(result => {
-        document.querySelector('.login-btn').textContent = result.user.displayName;
-        document.querySelector('.login-btn').disabled = true;
+        const loginBtn = document.getElementById('loginBtn');
+        loginBtn.textContent = result.user.displayName;
+        loginBtn.disabled = true;
         userLogged = true;
         loadFromFirebase();
       })
