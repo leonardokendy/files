@@ -133,7 +133,7 @@
       padding: 0.48rem 1rem;
       border-radius: 7px;
       font-weight: bold;
-      margin-bottom: 0.7rem;
+      margin-bottom: 0.2rem;
       box-shadow: 0 1px 4px #0002;
       font-size: 0.97rem;
       cursor: pointer;
@@ -301,7 +301,7 @@
       <div class="preview-title">Game Name</div>
       <div class="preview-desc">Description</div>
       <div class="preview-tags"></div>
-      <button class="preview-moreinfo" style="display:none;">More Info</button>
+      <button class="preview-moreinfo" style="display:none; margin-bottom:0.2rem;">More Info</button>
       <a class="preview-link" href="#" target="_blank">Play</a>
     `;
 
@@ -499,7 +499,7 @@
       infoBtn.className = 'preview-moreinfo';
       infoBtn.textContent = 'More Info';
       infoBtn.style.display = 'block';
-      infoBtn.style.marginBottom = '0.7rem';
+      infoBtn.style.marginBottom = '0.2rem';
       infoBtn.onclick = () => {
         // Abre instruções em nova janela
         const newWindow = window.open('', '_blank', 'width=600,height=400,scrollbars=yes,resizable=yes');
