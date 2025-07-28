@@ -301,7 +301,7 @@
       <div class="preview-title">Game Name</div>
       <div class="preview-desc">Description</div>
       <div class="preview-tags"></div>
-      <button class="preview-moreinfo" style="display:none;">Instructions</button>
+      <button class="preview-moreinfo" style="display:none;">More Info</button>
       <a class="preview-link" href="#" target="_blank">Play</a>
     `;
 
@@ -497,7 +497,7 @@
     if (g.moreinfo && typeof g.moreinfo === "string" && g.moreinfo.trim().length > 0) {
       const infoBtn = document.createElement('button');
       infoBtn.className = 'preview-moreinfo';
-      infoBtn.textContent = 'Instructions';
+      infoBtn.textContent = 'More Info';
       infoBtn.style.display = 'block';
       infoBtn.style.marginBottom = '0.7rem';
       infoBtn.onclick = () => {
