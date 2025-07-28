@@ -430,12 +430,42 @@
     };
   }
 
+  // Função para gerar ID único baseado no nome
+  async function generateUniqueGameId(nome) {
+    // Cria ID base a partir do nome
+    const baseId = nome.toLowerCase()
+                      .replace(/[^a-z0-9]/g, '-')  // substitui caracteres especiais por hífen
+                      .replace(/-+/g, '-')         // remove hífens duplos  
+                      .replace(/^-|-$/g, '');      // remove hífens do início/fim
+
+    let finalId = baseId;
+    let counter = 1;
+
+    // Verifica se já existe um documento com esse ID
+    while (true) {
+      const docRef = db.collection('games').doc(finalId);
+      const doc = await docRef.get();
+      
+      if (!doc.exists) {
+        // ID disponível, pode usar
+        break;
+      } else {
+        // ID já existe, tenta com número
+        counter++;
+        finalId = `${baseId}-${counter}`;
+      }
+    }
+
+    return finalId;
+  }
+
   function getLabelForLink(link) {
     if (!link) return 'Play';
     return /\.(pdf|zip|docx?|xlsx?|pptx?|mp3|mp4)$/i.test(link) ? 'Download' : 'Play';
   }
 
-  function addGame() {
+  // Função para salvar jogo com ID único
+  async function addGame() {
     if (!window.currentEditElements) {
       showToast('⚠️ Erro: elementos não encontrados!');
       return;
@@ -457,16 +487,22 @@
     // Salva null ao invés de string vazia para moreinfo
     if (!moreinfo) moreinfo = null;
 
-    db.collection('games').doc().set({
-      nome,
-      descricao,
-      tags,
-      link,
-      moreinfo,
-      buttonText
-    })
-    .then(() => {
-      showToast('✅ Jogo adicionado com sucesso!');
+    try {
+      // Gera ID único baseado no nome
+      const gameId = await generateUniqueGameId(nome);
+      
+      console.log(`Salvando jogo com ID: ${gameId}`); // Debug
+      
+      await db.collection('games').doc(gameId).set({
+        nome,
+        descricao,
+        tags,
+        link,
+        moreinfo,
+        buttonText
+      });
+      
+      showToast(`✅ Jogo "${nome}" salvo com ID: ${gameId}`);
       
       // Limpa todos os campos
       elements.inputNome.value = '';
@@ -484,11 +520,10 @@
       elements.previewLink.textContent = 'Play';
       
       loadFromFirebase();
-    })
-    .catch(error => {
+    } catch (error) {
       console.error('Erro ao salvar:', error);
       showToast('❌ Erro ao salvar jogo!');
-    });
+    }
   }
 
   function renderCard(g) {
