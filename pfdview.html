@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PDF + Audio + AI</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #toolbar {
+      background: #f0f0f0;
+      padding: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      width: 100%;
+    }
+    #viewerContainer {
+      position: relative;
+      height: calc(100vh - 60px);
+      overflow: auto;
+      flex: 1;
+    }
+    #pdfViewer canvas {
+      margin: auto;
+      display: block;
+    }
+    #audioPlayer {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      z-index: 100;
+    }
+    #aiSidebar {
+      position: fixed;
+      top: 60px;
+      right: 0;
+      width: 300px;
+      height: calc(100% - 60px);
+      background: #fafafa;
+      border-left: 1px solid #ccc;
+      padding: 10px;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 200;
+    }
+    #aiSidebar textarea {
+      width: 100%;
+      resize: vertical;
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div style="position: fixed; top: 0; left: 0; right: 300px; z-index: 101;">
+    <div id="toolbar">
+      <input type="file" id="fileInput" accept="application/pdf">
+      <button onclick="goToPage()">Go to Page</button>
+      <input type="number" id="pageNumber" value="1" min="1">
+      <button onclick="nextPage()">Next Page</button>
+      <button onclick="nextLesson()">Next Lesson</button>
+      <button onclick="zoomIn()">Zoom In</button>
+      <button onclick="zoomOut()">Zoom Out</button>
+    </div>
+  </div>
+
+  <div id="viewerContainer">
+    <div id="pdfViewer"></div>
+  </div>
+
+  <div id="audioPlayer">
+    <audio id="player" controls></audio>
+  </div>
+
+  <div id="aiSidebar">
+    <button onclick="startTextSelection()">Selecionar Texto</button>
+    <textarea id="selectedText" placeholder="Texto selecionado..." rows="6"></textarea>
+    <button onclick="sendToAI()">Perguntar à IA</button>
+    <textarea id="aiResponse" placeholder="Resposta da IA..." rows="6" readonly></textarea>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    const audioMap = {
+      9: "https://springschool.me/qrcode/books/eb1b/SB1L00_001.mp3",
+      10: "https://springschool.me/qrcode/books/eb1b/SB1L00_003.mp3",
+      13: "https://springschool.me/qrcode/books/eb1b/SB1L01_001.mp3",
+      14: "https://springschool.me/qrcode/books/eb1b/SB1L01_002.mp3",
+      15: "https://springschool.me/qrcode/books/eb1b/SB1L01_003.mp3"
+    };
+
+    let pdfDoc = null, currentPage = 1, zoom = 1.5;
+
+    const fileInput = document.getElementById('fileInput');
+    const viewer = document.getElementById('pdfViewer');
+    const viewerContainer = document.getElementById('viewerContainer');
+    const audio = document.getElementById('player');
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file.type === 'application/pdf') {
+        const fileReader = new FileReader();
+        fileReader.onload = function () {
+          const typedarray = new Uint8Array(this.result);
+          pdfjsLib.getDocument(typedarray).promise.then((doc) => {
+            pdfDoc = doc;
+            currentPage = 1;
+            renderPage(currentPage);
+          });
+        };
+        fileReader.readAsArrayBuffer(file);
+      }
+    });
+
+    function renderPage(pageNum) {
+      pdfDoc.getPage(pageNum).then((page) => {
+        const viewport = page.getViewport({ scale: zoom });
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        page.render({ canvasContext: context, viewport }).promise.then(() => {
+          viewer.innerHTML = '';
+          viewer.appendChild(canvas);
+          updateAudio(pageNum);
+        });
+      });
+    }
+
+    function updateAudio(page) {
+      if (audioMap[page]) {
+        audio.src = audioMap[page];
+        audio.play();
+      } else {
+        audio.src = '';
+      }
+    }
+
+    function goToPage() {
+      const pg = parseInt(document.getElementById('pageNumber').value);
+      if (pg >= 1 && pg <= pdfDoc.numPages) {
+        currentPage = pg;
+        renderPage(currentPage);
+      }
+    }
+
+    function nextPage() {
+      if (currentPage < pdfDoc.numPages) {
+        currentPage++;
+        document.getElementById('pageNumber').value = currentPage;
+        renderPage(currentPage);
+      }
+    }
+
+    function nextLesson() {
+      currentPage += 10;
+      if (currentPage > pdfDoc.numPages) currentPage = pdfDoc.numPages;
+      document.getElementById('pageNumber').value = currentPage;
+      renderPage(currentPage);
+    }
+
+    function zoomIn() {
+      zoom += 0.25;
+      renderPage(currentPage);
+    }
+
+    function zoomOut() {
+      zoom = Math.max(0.5, zoom - 0.25);
+      renderPage(currentPage);
+    }
+
+    // IA: Seleção de texto
+    let isSelecting = false;
+
+    function startTextSelection() {
+      isSelecting = true;
+      viewerContainer.style.cursor = 'text';
+      viewerContainer.addEventListener('mouseup', captureText);
+    }
+
+    function captureText() {
+      if (!isSelecting) return;
+      const selection = window.getSelection().toString().trim();
+      if (selection) {
+        document.getElementById('selectedText').value = selection;
+      }
+      isSelecting = false;
+      viewerContainer.style.cursor = 'default';
+      viewerContainer.removeEventListener('mouseup', captureText);
+    }
+
+    async function sendToAI() {
+      const inputText = document.getElementById('selectedText').value.trim();
+      const responseArea = document.getElementById('aiResponse');
+      if (!inputText) return alert("Selecione um texto primeiro.");
+      responseArea.value = "Pensando...";
+
+      const apiKey = "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"; // <<< Insira sua chave aqui
+      try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: [
+              { role: "system", content: "Você é um assistente que ajuda a entender PDFs educacionais." },
+              { role: "user", content: inputText }
+            ]
+          })
+        });
+        const data = await response.json();
+        if (data.choices && data.choices.length > 0) {
+          responseArea.value = data.choices[0].message.content.trim();
+        } else {
+          responseArea.value = "Erro ao obter resposta.";
+        }
+      } catch (err) {
+        responseArea.value = "Erro de rede ou API.";
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>
