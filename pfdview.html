@@ -85,6 +85,7 @@
 
   <div id="aiSidebar">
     <button onclick="startTextSelection()">Selecionar Texto</button>
+<button onclick="startOCRSelection()">Selecionar Área (OCR)</button>
     <textarea id="selectedText" placeholder="Texto selecionado..." rows="6"></textarea>
     <button onclick="sendToAI()">Perguntar à IA</button>
     <textarea id="aiResponse" placeholder="Resposta da IA..." rows="6" readonly></textarea>
@@ -235,5 +236,91 @@
       }
     }
   </script>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+<script>
+  let isOCRSelecting = false;
+  let ocrStart = null;
+  let selectionBox = null;
+
+  const pdfViewer = document.getElementById('pdfViewer');
+
+  function startOCRSelection() {
+    isOCRSelecting = true;
+    viewerContainer.style.cursor = 'crosshair';
+
+    pdfViewer.addEventListener('mousedown', startBox);
+    pdfViewer.addEventListener('mousemove', drawBox);
+    pdfViewer.addEventListener('mouseup', finishOCR);
+  }
+
+  function startBox(e) {
+    const rect = pdfViewer.getBoundingClientRect();
+    ocrStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+    if (selectionBox) selectionBox.remove();
+
+    selectionBox = document.createElement('div');
+    selectionBox.style.position = 'absolute';
+    selectionBox.style.border = '2px dashed red';
+    selectionBox.style.background = 'rgba(255,0,0,0.1)';
+    selectionBox.style.zIndex = 999;
+    pdfViewer.appendChild(selectionBox);
+  }
+
+  function drawBox(e) {
+    if (!ocrStart || !isOCRSelecting) return;
+
+    const rect = pdfViewer.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const width = x - ocrStart.x;
+    const height = y - ocrStart.y;
+
+    selectionBox.style.left = `${Math.min(x, ocrStart.x)}px`;
+    selectionBox.style.top = `${Math.min(y, ocrStart.y)}px`;
+    selectionBox.style.width = `${Math.abs(width)}px`;
+    selectionBox.style.height = `${Math.abs(height)}px`;
+  }
+
+  async function finishOCR(e) {
+    isOCRSelecting = false;
+    viewerContainer.style.cursor = 'default';
+
+    pdfViewer.removeEventListener('mousedown', startBox);
+    pdfViewer.removeEventListener('mousemove', drawBox);
+    pdfViewer.removeEventListener('mouseup', finishOCR);
+
+    const canvas = pdfViewer.querySelector('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const scale = canvas.width / canvas.getBoundingClientRect().width;
+    const box = selectionBox.getBoundingClientRect();
+    const viewerBox = canvas.getBoundingClientRect();
+
+    const sx = (box.left - viewerBox.left) * scale;
+    const sy = (box.top - viewerBox.top) * scale;
+    const sw = box.width * scale;
+    const sh = box.height * scale;
+
+    const cropped = document.createElement('canvas');
+    cropped.width = sw;
+    cropped.height = sh;
+    const croppedCtx = cropped.getContext('2d');
+    croppedCtx.drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
+
+    document.getElementById('selectedText').value = 'Lendo OCR...';
+
+    const result = await Tesseract.recognize(cropped, 'eng', {
+      logger: m => console.log(m)
+    });
+
+    document.getElementById('selectedText').value = result.data.text.trim();
+
+    if (selectionBox) selectionBox.remove();
+  }
+</script>
 </body>
 </html>
+
